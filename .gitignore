@@ -1,0 +1,7 @@
+/bin/
+/build/
+*.class
+
+# Local copies of the supplied reference files.
+/LinkedChain.java
+/UNO_Spec_new.doc
