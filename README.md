@@ -18,18 +18,18 @@ A legal drawn card is played immediately; an illegal drawn card stays in the han
 
 - **Changes from the spec:** Added `Move` for legal action candidates and three bot levels. Simple plays the first legal card; Normal favors its remaining colors and conserves Wilds; Master also prioritizes winning and pressures opponents with few cards. `GameClass` validates actions for both players.
 - **LinkedChain changes:** None. The actual `add(T)` and `remove(T)` return boolean, and the class has no iterator. Application code follows that API and uses `toArray` for traversal. `NumberedCards`, `SpecialCards`, and `Move` are stored and retrieved through the same generic class.
-- **Unknowns:** Checked the provided chain API and implemented bot selection and scripted input testing. The supplied spec does not include the original scope's full unknowns list; the team still needs to compare it.
+- **Unknowns:** We had not defined a clear list of unknowns before building this prototype. During implementation, we clarified the supplied LinkedChain API, legal-move generation, and console-input testing. Manual playtesting is still needed to evaluate usability and the differences between bot difficulty levels.
 - **Remaining limitations:** Manual gameplay review is pending. The prototype uses local bots; an external model API is not implemented. A depleted deck ends the round instead of recycling discards.
 
 For complexity, let h be hand size and d be deck size. Card/Move accessors and turn updates are O(1); drawing and fixed draw penalties are O(d); `isValid` is O(h) in the +4 case; applying a move is O(h + d). Legal-move generation and bot selection are O(h²), including the chain's linear `addToEnd` cost. Human input is O(h + d + L) per attempt, where L is input length. The round's cost is the sum of its turns and input attempts. These retain the spec's linear draw and quadratic bot bounds.
 
 ## Next Steps
 
-1. Manually play all three levels and check special effects and input recovery. Owner: ______.
-2. For defects found during play, add regression cases to `PlayerClassTest`, `BotClassTest`, or `GameClassTest` before fixing them. Owner: ______.
-3. Confirm scope coverage, contributions, and submission details. Owner: ______.
+1. Manually play all three levels and check special effects and input recovery. Owner: ___Greek Yuan___.
+2. For defects found during play, add regression cases to `PlayerClassTest`, `BotClassTest`, or `GameClassTest` before fixing them. Owner: ___Sudeep Rawal___.
+3. Confirm scope coverage, contributions, and submission details. Owner: ___Edward Wei___.
 
-The smarter-bot stretch goal is committed and implemented as Normal/Master. API integration is dropped from this prototype. The tests include empty collections, removal of a missing element, rejected-state preservation, and complete human/bot turns.
+We refined the smarter-bot stretch goal into three local difficulty levels. Master uses heuristics for immediate wins, color selection, and opponent pressure; it does not guarantee a globally optimal move. API integration is dropped from this prototype. The tests include empty collections, removal of a missing element, rejected-state preservation, and complete human/bot turns.
 
 ## Attribution
 
