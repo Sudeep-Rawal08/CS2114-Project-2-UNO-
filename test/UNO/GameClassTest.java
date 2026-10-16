@@ -268,4 +268,30 @@ public class GameClassTest
         assertTrue(f.text().contains("Human wins"));
         assertThrows(IllegalArgumentException.class, () -> f.game.run(null));
     }
+
+    @Test
+    public void bareCardIsDisplayedButRejectedAsAnUnplayableMove()
+    {
+        GameFixture f = new GameFixture();
+        Card bare = new Card("Red");
+        GameFixture.hand(f.human, bare);
+        Card top = f.game.currentCard;
+        f.game.printPlayerDeck(f.human);
+        assertTrue(f.text().contains("Red card (not playable)"));
+        assertFalse(f.game.isValid(bare));
+        LinkedChain<Move> candidates = f.game.getLegalMoves();
+        assertEquals(1, candidates.size());
+        assertTrue(candidates.get(0).isDraw());
+        assertThrows(IllegalArgumentException.class,
+            () -> f.game.applyMove(Move.play(bare, null)));
+        assertSame(top, f.game.currentCard);
+        assertEquals("Red", f.game.currentColor);
+        assertEquals(1, f.human.getCardList().size());
+        assertSame(bare, f.human.getCardList().get(0));
+        assertEquals(20, f.deck.size());
+        assertFalse(f.game.skipNext);
+        Card drawFour = new SpecialCards("Wild", "+4");
+        GameFixture.hand(f.human, bare, drawFour);
+        assertTrue(f.game.isValid(drawFour));
+    }
 }

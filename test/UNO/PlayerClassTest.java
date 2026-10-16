@@ -205,4 +205,18 @@ public class PlayerClassTest
             assertTrue(f.text().contains(code));
         }
     }
+
+    @Test
+    public void bareCardDoesNotCrashSelectionOfAnOwnedNumberedCard()
+    {
+        GameFixture f = new GameFixture("R5\n", BotDifficulty.SIMPLE);
+        Card bare = new Card("Red");
+        Card playable = new NumberedCards("Red", 5);
+        GameFixture.hand(f.human, bare, playable);
+        assertTrue(f.human.playCard(f.game));
+        assertSame(playable, f.game.currentCard);
+        assertEquals(1, f.human.getCardList().size());
+        assertSame(bare, f.human.getCardList().get(0));
+        assertFalse(f.human.hasQuit());
+    }
 }

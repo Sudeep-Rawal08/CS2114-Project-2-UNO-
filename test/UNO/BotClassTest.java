@@ -280,4 +280,22 @@ public class BotClassTest
         assertSame(before.getCard(), after.getCard());
         assertEquals(before.getChosenColor(), after.getChosenColor());
     }
+
+    @Test
+    public void everyDifficultyIgnoresBareCardsWhenChoosingAPlay()
+    {
+        for (BotDifficulty level : BotDifficulty.values())
+        {
+            GameFixture f = new GameFixture("", level);
+            f.game.currentTurn = 1;
+            Card bare = new Card("Red");
+            Card playable = new NumberedCards("Red", 2);
+            GameFixture.hand(f.bot, bare, playable);
+            assertSame(playable, f.bot.chooseMove(f.game).getCard());
+            assertTrue(f.bot.playCard(f.game));
+            assertSame(playable, f.game.currentCard);
+            assertEquals(1, f.bot.getCardList().size());
+            assertSame(bare, f.bot.getCardList().get(0));
+        }
+    }
 }

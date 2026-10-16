@@ -156,6 +156,10 @@ public class PlayerClass
             return card.getCardColor().substring(0, 1)
                 + ((NumberedCards)card).getCardNumber();
         }
+        if (!(card instanceof SpecialCards))
+        {
+            return "N/A";
+        }
         SpecialCards special = (SpecialCards)card;
         if (special.isWild())
         {

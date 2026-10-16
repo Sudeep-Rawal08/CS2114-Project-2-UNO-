@@ -74,7 +74,7 @@ public class GameClass
     /** @param card the proposed card @return whether the current rules allow it */
     public boolean isValid(Card card)
     {
-        if (card == null)
+        if (!(card instanceof NumberedCards) && !(card instanceof SpecialCards))
         {
             return false;
         }
@@ -88,7 +88,9 @@ public class GameClass
                 {
                     boolean wild = owned instanceof SpecialCards
                         && ((SpecialCards)owned).isWild();
-                    if (!wild && currentColor.equals(owned.getCardColor()))
+                    boolean playable = owned instanceof NumberedCards
+                        || owned instanceof SpecialCards;
+                    if (playable && !wild && currentColor.equals(owned.getCardColor()))
                     {
                         return false;
                     }
@@ -121,7 +123,9 @@ public class GameClass
         output.println("Your hand (" + hand.length + " cards):");
         for (Card card : hand)
         {
-            output.println("  " + PlayerClass.cardCode(card) + " = " + card);
+            String description = card instanceof NumberedCards || card instanceof SpecialCards
+                ? card.toString() : card.getCardColor() + " card (not playable)";
+            output.println("  " + PlayerClass.cardCode(card) + " = " + description);
         }
     }
 
