@@ -58,3 +58,5 @@ Fill in each team member's actual contribution before submission.
 | `test/UNO/GameFixture.java` | | |
 
 ## GenAI Use
+
+GenAI assisted with code development and review, testing, architectural discussions, and debugging.
