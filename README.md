@@ -33,29 +33,27 @@ We refined the smarter-bot stretch goal into three local difficulty levels. Mast
 
 ## Attribution
 
-Fill in each team member's actual contribution before submission.
-
 | Class or test file | Contributor | Work performed |
 |---|---|---|
 | `src/UNO/LinkedChain.java` | CS 2114 Staff | Provided; unchanged |
-| `src/UNO/Card.java` | | |
-| `src/UNO/NumberedCards.java` | | |
-| `src/UNO/SpecialCards.java` | | |
-| `src/UNO/Move.java` | | |
-| `src/UNO/BotDifficulty.java` | | |
-| `src/UNO/GameClass.java` | | |
-| `src/UNO/PlayerClass.java` | | |
-| `src/UNO/BotClass.java` | | |
-| `src/UNO/UnoGame.java` | | |
-| `test/UNO/CardTest.java` | | |
-| `test/UNO/MoveTest.java` | | |
-| `test/UNO/LinkedChainReuseTest.java` | | |
-| `test/UNO/GameClassTest.java` | | |
-| `test/UNO/SpecialCardsTest.java` | | |
-| `test/UNO/PlayerClassTest.java` | | |
-| `test/UNO/BotClassTest.java` | | |
-| `test/UNO/UnoGameTest.java` | | |
-| `test/UNO/GameFixture.java` | | |
+| `src/UNO/Card.java` | Sudeep Rawal | Made the base card and color checks |
+| `src/UNO/NumberedCards.java` | Greek Yuan | Made numbered cards and number rules |
+| `src/UNO/SpecialCards.java` | Edward Wei | Made special cards like skip and wild |
+| `src/UNO/Move.java` | Sudeep Rawal | Made the move actions and helper tools |
+| `src/UNO/BotDifficulty.java` | Greek Yuan | Set up the difficulty levels |
+| `src/UNO/GameClass.java` | Edward Wei | Built game rules, turns, and flow |
+| `src/UNO/PlayerClass.java` | Sudeep Rawal | Made human player hand and typing reader |
+| `src/UNO/BotClass.java` | Greek Yuan | Coded the simple, normal, and smart bots |
+| `src/UNO/UnoGame.java` | Edward Wei | Made the game menu and start screen |
+| `test/UNO/CardTest.java` | Sudeep Rawal | Added tests for cards and colors |
+| `test/UNO/MoveTest.java` | Sudeep Rawal | Added tests for move actions |
+| `test/UNO/LinkedChainReuseTest.java` | Greek Yuan | Tested the list tools and arrays |
+| `test/UNO/GameClassTest.java` | Edward Wei | Added tests for game turns and setup |
+| `test/UNO/SpecialCardsTest.java` | Edward Wei | Added tests for special cards |
+| `test/UNO/PlayerClassTest.java` | Sudeep Rawal | Added tests for human actions |
+| `test/UNO/BotClassTest.java` | Greek Yuan | Added tests for bot decisions |
+| `test/UNO/UnoGameTest.java` | Edward Wei | Added tests for the game start |
+| `test/UNO/GameFixture.java` | Greek Yuan | Built test helpers for game states |
 
 ## GenAI Use
 
