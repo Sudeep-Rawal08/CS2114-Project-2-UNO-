@@ -8,16 +8,6 @@ Use JDK 11 or newer. Eclipse compiler settings target Java 8, which also runs on
 
 In Eclipse, import this folder as an existing project. Run `src/UNO/UnoGame.java` with **Run As > Java Application**. Run the `test` source folder with **Run As > JUnit Test**. If Eclipse has stale compiled files, refresh the project with F5 and use **Project > Clean**.
 
-Alternatively, run these commands from the project folder in PowerShell:
-
-```powershell
-# Compile and play.
-powershell -ExecutionPolicy Bypass -File .\scripts\run.ps1
-
-# Compile and execute the JUnit tests.
-powershell -ExecutionPolicy Bypass -File .\scripts\build.ps1 -Test
-```
-
 ## Controls
 
 Choose `1` Simple, `2` Normal, or `3` Master. Enter a card code shown beside a card in your hand: `R5` means Red 5, `B+` means Blue Draw Two, `GS` means Green Skip, and `YR` means Yellow Reverse. `WW` is Wild, `W4` is Draw Four, `D` draws, and `Q` quits. For a Wild, enter Red, Blue, Green, or Yellow (or R/B/G/Y). Input is case-insensitive.
