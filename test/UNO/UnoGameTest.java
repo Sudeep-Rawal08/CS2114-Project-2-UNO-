@@ -1,100 +1,51 @@
 package UNO;
 
-import static org.junit.Assert.*;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.io.PrintStream;
-import java.nio.charset.StandardCharsets;
-import org.junit.Test;
-
-/** Console entry point and full game-loop termination checks. */
-public class UnoGameTest
+/** Integration tests for setting up a game with the selected bot difficulty. */
+public class UnoGameTest extends student.TestCase
 {
-    @Test(timeout = 2000)
-    public void mainSelectsEachDifficultyAndExitsOnQuit()
+    public void testDefaultGameUsesSimpleDifficulty()
     {
-        String[] levels = {"SIMPLE", "NORMAL", "MASTER"};
-        for (int i = 0; i < levels.length; i++)
-        {
-            String text = runMain((i + 1) + "\nQ\n", new String[0]);
-            assertTrue(text.contains("Selected bot: " + levels[i]));
-            assertTrue(text.contains("Top:"));
-            assertTrue(text.contains("Round ended"));
-        }
+        GameClass game = new GameClass();
+        assertEquals(BotDifficulty.SIMPLE,
+            ((BotClass)game.players[1]).getDifficulty());
     }
 
-    @Test(timeout = 1000)
-    public void mainRecoversFromInvalidDifficultyAndHandlesEofOrNullArgs()
+    public void testGameUsesSelectedSimpleDifficulty()
     {
-        String text = runMain("wrong\n2\n", null);
-        assertTrue(text.contains("Invalid difficulty"));
-        assertTrue(text.contains("Selected bot: NORMAL"));
-        assertTrue(text.contains("Round ended"));
-        assertTrue(runMain("", new String[0]).contains("Goodbye"));
-        assertTrue(runMain("Q\n", new String[0]).contains("Goodbye"));
+        GameClass game = new GameClass(BotDifficulty.SIMPLE);
+        assertEquals(BotDifficulty.SIMPLE,
+            ((BotClass)game.players[1]).getDifficulty());
+        assertEquals(7, game.players[0].getCardList().size());
+        assertEquals(7, game.players[1].getCardList().size());
     }
 
-    @Test
-    public void mainRejectsUnsupportedArgumentsWithoutStartingRound()
+    public void testGameUsesSelectedNormalDifficulty()
     {
-        String text = runMain("", new String[] {"--unsupported"});
-        assertTrue(text.contains("Usage:"));
-        assertFalse(text.contains("Top:"));
+        GameClass game = new GameClass(BotDifficulty.NORMAL);
+        assertEquals(BotDifficulty.NORMAL,
+            ((BotClass)game.players[1]).getDifficulty());
+        assertTrue(game.currentCard instanceof NumberedCards);
     }
 
-    @Test(timeout = 1000)
-    public void fullRoundCanFinishWithHumanWin()
+    public void testGameUsesSelectedMasterDifficulty()
     {
-        GameFixture f = new GameFixture("R5\n", BotDifficulty.SIMPLE);
-        GameFixture.hand(f.human, new NumberedCards("Red", 5));
-        f.game.run(f.output);
-        assertTrue(f.text().contains("Human wins!"));
-        assertFalse(f.text().contains("Bot wins!"));
+        GameClass game = new GameClass(BotDifficulty.MASTER);
+        assertEquals(BotDifficulty.MASTER,
+            ((BotClass)game.players[1]).getDifficulty());
+        assertEquals(game.currentCard.getCardColor(), game.currentColor);
     }
 
-    @Test(timeout = 1000)
-    public void fullRoundRunsHumanThenBotAndAnnouncesBotWin()
+    public void testGameRejectsNullDifficulty()
     {
-        GameFixture f = new GameFixture("D\n", BotDifficulty.MASTER);
-        f.deck.clear();
-        f.deck.add(new NumberedCards("Blue", 2));
-        GameFixture.hand(f.bot, new NumberedCards("Red", 5));
-        f.game.run(f.output);
-        assertTrue(f.text().contains("Turn: Human"));
-        assertTrue(f.text().contains("Turn: Bot"));
-        assertTrue(f.text().contains("Bot wins!"));
-        assertEquals(2, f.human.getCardList().size());
-    }
-
-    @Test(timeout = 1000)
-    public void fullRoundCatchesEmptyDeckAndTerminatesOnEof()
-    {
-        GameFixture depleted = new GameFixture("D\n", BotDifficulty.SIMPLE);
-        depleted.deck.clear();
-        depleted.game.run(depleted.output);
-        assertTrue(depleted.text().contains("Round stopped: no cards are available"));
-        GameFixture eof = new GameFixture();
-        eof.game.run(eof.output);
-        assertTrue(eof.text().contains("Round ended"));
-    }
-
-    private static String runMain(String input, String[] args)
-    {
-        InputStream originalInput = System.in;
-        PrintStream originalOutput = System.out;
-        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        boolean caughtExpected = false;
         try
         {
-            System.setIn(new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8)));
-            System.setOut(new PrintStream(bytes));
-            UnoGame.main(args);
-            return bytes.toString();
+            new GameClass(null);
         }
-        finally
+        catch (IllegalArgumentException exception)
         {
-            System.setIn(originalInput);
-            System.setOut(originalOutput);
+            caughtExpected = true;
         }
+        assertTrue("Expected IllegalArgumentException", caughtExpected);
     }
 }

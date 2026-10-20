@@ -1,173 +1,168 @@
 package UNO;
 
-import java.io.PrintStream;
 import java.util.Scanner;
-import java.util.Locale;
 
-/** A human player with a separately owned hand. */
+/** Represents the human player's hand and decisions. */
 public class PlayerClass
 {
-    private final LinkedChain<Card> cardHand = new LinkedChain<Card>();
-    private final Scanner input;
-    private final PrintStream output;
-    private boolean quit;
+    protected LinkedChain<Card> cardHand;
+    protected static final Scanner INPUT = new Scanner(System.in);
 
-    /** Creates a human player using the console. */
     public PlayerClass()
     {
-        this(new Scanner(System.in), System.out);
+        cardHand = new LinkedChain<Card>();
     }
 
-    PlayerClass(Scanner input, PrintStream output)
-    {
-        if (input == null || output == null)
-        {
-            throw new IllegalArgumentException("Input and output are required");
-        }
-        this.input = input;
-        this.output = output;
-    }
-
-    /** @return this player's existing, separately owned hand */
     public LinkedChain<Card> getCardList()
     {
         return cardHand;
     }
-    /** Reads one turn, retrying rejected input without changing the game.
-     * A playable drawn card is immediately played; wild draws request a color.
-     * @param game this player's active game
-     * @return whether a card was played, rather than passing or quitting
-     */
+
+    /** Returns whether this player is controlled by the computer. */
+    public boolean isBot()
+    {
+        return false;
+    }
+
+    /** Returns the display title for this player. */
+    public String getTitle()
+    {
+        return "You";
+    }
+
+    /** Chooses a color for a wild card; bots override this method. */
+    public String chooseColor()
+    {
+        return askForColor();
+    }
+
     public boolean playCard(GameClass game)
     {
-        if (game == null || game.currentPlayer() != this)
+        if (game == null)
         {
-            throw new IllegalArgumentException("This must be the player's turn");
-        }
-        if (quit || cardHand.isEmpty())
-        {
-            return false;
+            throw new IllegalArgumentException("Game must not be null.");
         }
         while (true)
         {
-            output.println("Enter a card code, D to draw, or Q to quit:");
-            String code = readLine();
-            if (quit)
+            System.out.println("Your hand:");
+            game.printPlayerDeck(this);
+            System.out.println("Current card: " + game.currentCard
+                + " | Required color: " + game.currentColor);
+            System.out.println(game.players[1].getTitle() + " has "
+                + game.players[1].getCardList().size() + " cards.");
+            System.out.print("Enter a card number to play, or D to draw: ");
+            String input = INPUT.nextLine().trim();
+            if (input.isEmpty())
             {
-                return false;
-            }
-            code = code.toUpperCase(Locale.ROOT);
-            if ("D".equals(code))
-            {
-                Card drawn = game.applyMove(Move.draw());
-                output.println("You drew: " + cardCode(drawn) + " = " + drawn);
-                if (!game.isValid(drawn))
-                {
-                    output.println("The drawn card cannot be played. Turn ends.");
-                    return false;
-                }
-                return playSelected(game, drawn);
-            }
-            if (!code.matches("[RBGY][0-9+RS]|W[W4]"))
-            {
-                output.println("Invalid input");
+                System.out.println("Invalid input.");
                 continue;
             }
-            Card selected = null;
-            for (Card card : cardHand.toArray(new Card[cardHand.size()]))
+            if (input.equalsIgnoreCase("D"))
             {
-                if (code.equals(cardCode(card)))
+                try
                 {
-                    selected = card;
-                    break;
+                    Card drawn = game.drawCard(this);
+                    System.out.println("You drew: " + drawn);
+                    if (game.isValid(drawn))
+                    {
+                        String answer = "";
+                        while (!answer.equalsIgnoreCase("y")
+                            && !answer.equalsIgnoreCase("n")
+                            && !answer.equalsIgnoreCase("yes")
+                            && !answer.equalsIgnoreCase("no"))
+                        {
+                            System.out.print("Play this card? (Y/N): ");
+                            answer = INPUT.nextLine().trim();
+                            if (!answer.equalsIgnoreCase("y")
+                                && !answer.equalsIgnoreCase("n")
+                                && !answer.equalsIgnoreCase("yes")
+                                && !answer.equalsIgnoreCase("no"))
+                            {
+                                System.out.println("Invalid input. Please enter Y or N.");
+                            }
+                        }
+                        if (answer.equalsIgnoreCase("y")
+                            || answer.equalsIgnoreCase("yes"))
+                        {
+                            return playSpecificCard(game, drawn);
+                        }
+                    }
+                    return false;
+                }
+                catch (IllegalStateException exception)
+                {
+                    System.out.println("No cards are available. The round ends.");
+                    return false;
                 }
             }
-            if (selected == null)
+            try
             {
-                output.println("You do not have that card");
+                int index = Integer.parseInt(input) - 1;
+                if (index < 0 || index >= cardHand.size())
+                {
+                    System.out.println("Invalid input.");
+                    continue;
+                }
+                Card selected = cardHand.get(index);
+                if (!game.isValid(selected))
+                {
+                    System.out.println("You cannot play that card.");
+                    continue;
+                }
+                return playSpecificCard(game, selected);
             }
-            else if (!game.isValid(selected))
+            catch (NumberFormatException exception)
             {
-                output.println("You cannot play that card");
+                System.out.println("Invalid input.");
+            }
+        }
+    }
+
+    protected boolean playSpecificCard(GameClass game, Card card)
+    {
+        if (!game.isValid(card))
+        {
+            System.out.println("You cannot play that card.");
+            return false;
+        }
+        cardHand.remove(card);
+        game.currentCard = card;
+        String chosenColor = null;
+        if (card.isSpecialCard())
+        {
+            if (card.isWildCard())
+            {
+                chosenColor = askForColor();
             }
             else
             {
-                return playSelected(game, selected);
+                game.currentColor = card.getCardColor();
             }
+            card.playSpecialEffect(game, chosenColor);
         }
-    }
-
-    private boolean playSelected(GameClass game, Card card)
-    {
-        String color = null;
-        if (card instanceof SpecialCards && ((SpecialCards)card).isWild())
+        else
         {
-            while (!Card.isRegularColor(color))
-            {
-                output.println("Choose Red, Blue, Green, Yellow (or Q to quit):");
-                String answer = readLine();
-                if (quit)
-                {
-                    return false;
-                }
-                for (String option : Card.regularColors())
-                {
-                    if (option.equalsIgnoreCase(answer)
-                        || option.substring(0, 1).equalsIgnoreCase(answer))
-                    {
-                        color = option;
-                        break;
-                    }
-                }
-                if (color == null)
-                {
-                    output.println("Invalid input");
-                }
-            }
+            game.currentColor = card.getCardColor();
         }
-        game.applyMove(Move.play(card, color));
-        output.println("You played: " + card);
+        System.out.println("You played: " + card);
+        if (chosenColor != null)
+        {
+            System.out.println("You chose: " + chosenColor);
+        }
         return true;
     }
 
-    private String readLine()
+    protected String askForColor()
     {
-        if (!input.hasNextLine())
+        while (true)
         {
-            quit = true;
-            return "";
+            System.out.print("Choose a color (Red, Blue, Green, Yellow): ");
+            String color = INPUT.nextLine().trim();
+            if (color.equalsIgnoreCase("red")) return "Red";
+            if (color.equalsIgnoreCase("blue")) return "Blue";
+            if (color.equalsIgnoreCase("green")) return "Green";
+            if (color.equalsIgnoreCase("yellow")) return "Yellow";
+            System.out.println("Invalid color. Choose Red, Blue, Green, or Yellow.");
         }
-        String answer = input.nextLine().trim();
-        if ("Q".equalsIgnoreCase(answer))
-        {
-            quit = true;
-        }
-        return answer;
-    }
-    boolean hasQuit()
-    {
-        return quit;
-    }
-
-    static String cardCode(Card card)
-    {
-        if (card instanceof NumberedCards)
-        {
-            return card.getCardColor().substring(0, 1)
-                + ((NumberedCards)card).getCardNumber();
-        }
-        if (!(card instanceof SpecialCards))
-        {
-            return "N/A";
-        }
-        SpecialCards special = (SpecialCards)card;
-        if (special.isWild())
-        {
-            return "+4".equals(special.getCardType()) ? "W4" : "WW";
-        }
-        String type = special.getCardType();
-        String symbol = "+2".equals(type) ? "+"
-            : "skip".equals(type) ? "S" : "R";
-        return card.getCardColor().substring(0, 1) + symbol;
     }
 }

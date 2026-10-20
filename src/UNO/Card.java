@@ -1,34 +1,66 @@
 package UNO;
-// -------------------------------------------------------------------------
-/**
- *  Card class
- * 
- *  @author E
- *  @version Oct 15, 2026
- */
+
+/** Base class for cards. A card's color is one of the four regular colors. */
 public class Card
 {
-    private String color;
+    protected String color;
 
     public Card(String color)
     {
-        if (!isRegularColor(color) && !"Wild".equals(color))
+        if (!isRegularColor(color))
         {
             throw new IllegalArgumentException("Unsupported card color");
         }
         this.color = color;
     }
 
-    /** @return the stored color, including Wild before selection */
     public String getCardColor()
     {
         return color;
     }
 
-    /** @param color a supported color; subclasses restrict Wild */
+    /** Returns true when this is a numbered card. */
+    public boolean isNumberedCard()
+    {
+        return false;
+    }
+
+    /** Returns true when this is a special card. */
+    public boolean isSpecialCard()
+    {
+        return false;
+    }
+
+    /** Returns this card's number, or -1 when it has no number. */
+    public int getCardNumber()
+    {
+        return -1;
+    }
+
+    /** Returns this card's type, or null when it has no type. */
+    public String getCardType()
+    {
+        return null;
+    }
+
+    /** Returns whether this card lets its player choose a color. */
+    public boolean isWildCard()
+    {
+        return false;
+    }
+
+    /** Applies a special card's effect, if it has one. */
+    public void playSpecialEffect(GameClass game, String chosenColor)
+    {
+        if (chosenColor != null)
+        {
+            throw new IllegalArgumentException("This card does not choose a color.");
+        }
+    }
+
     public void setCardColor(String color)
     {
-        if (!isRegularColor(color) && !"Wild".equals(color))
+        if (!isRegularColor(color))
         {
             throw new IllegalArgumentException("Unsupported card color");
         }

@@ -1,48 +1,155 @@
 package UNO;
 
-import java.util.Random;
 import java.util.Scanner;
 
-/** Console entry point. */
-public final class UnoGame
+/** Starts and runs the UNO game. */
+public class UnoGame
 {
-    private UnoGame() { }
-    /** @param args no command-line arguments are required or accepted */
     public static void main(String[] args)
     {
-        if (args != null && args.length != 0)
+        Scanner input = PlayerClass.INPUT;
+        boolean playAgain = true;
+        System.out.println("Welcome to UNO!");
+        System.out.println("How to enter your moves:");
+        System.out.println("- Your hand is shown as a numbered list. Type the number beside the card you want to play.");
+        System.out.println("  Example: if the list says '3. Yellow 5', type 3 to play Yellow 5.");
+        System.out.println("- Type D to draw a card.");
+        System.out.println("- If the drawn card is playable, type Y to play it or N to keep it and end your turn.");
+        System.out.println("- For Wild and +4 cards, type a color name: Red, Blue, Green, or Yellow.");
+        System.out.println("- Card names look like 'Yellow 5', 'Blue +2', 'Red skip', 'Wild', or '+4'.");
+
+        while (playAgain)
         {
-            System.out.println("Usage: java -cp build/classes UNO.UnoGame");
-            return;
+            System.out.println();
+            System.out.println("Choose the bot difficulty:");
+            System.out.println("1. Simple");
+            System.out.println("2. Normal");
+            System.out.println("3. Master");
+
+            String choice = "";
+            BotDifficulty difficulty = null;
+            while (difficulty == null)
+            {
+                System.out.print("Enter 1, 2, or 3: ");
+                if (input.hasNextLine())
+                {
+                    choice = input.nextLine().trim();
+                }
+                if (choice.equals("1") || choice.equalsIgnoreCase("simple"))
+                {
+                    difficulty = BotDifficulty.SIMPLE;
+                }
+                else if (choice.equals("2") || choice.equalsIgnoreCase("normal"))
+                {
+                    difficulty = BotDifficulty.NORMAL;
+                }
+                else if (choice.equals("3") || choice.equalsIgnoreCase("master"))
+                {
+                    difficulty = BotDifficulty.MASTER;
+                }
+                else if (!input.hasNextLine())
+                {
+                    System.out.println("No input available. Ending the game.");
+                    return;
+                }
+                else
+                {
+                    System.out.println("Invalid choice. Please choose Simple, Normal, or Master.");
+                }
+            }
+
+            GameClass game = new GameClass(difficulty);
+            System.out.println("Bot difficulty: " + difficulty);
+            System.out.println("You are Player 1. The bot is Player 2.");
+            System.out.println("Starting card: " + game.currentCard);
+
+            boolean running = true;
+            boolean winnerFound = false;
+            while (running)
+            {
+                PlayerClass player = game.players[game.currentTurn];
+                System.out.println();
+                System.out.println(player.isBot()
+                    ? player.getTitle() + "'s turn." : "Your turn.");
+                boolean played = false;
+                try
+                {
+                    played = player.playCard(game);
+                    game.printPendingPenaltyMessage();
+                }
+                catch (IllegalStateException exception)
+                {
+                    System.out.println("The round ends: " + exception.getMessage());
+                    running = false;
+                }
+                if (game.isWinner(player))
+                {
+                    System.out.println(player.isBot()
+                        ? player.getTitle() + " wins! You lose." : "You win!");
+                    winnerFound = true;
+                    running = false;
+                }
+                if (!played)
+                {
+                    System.out.println(player.isBot()
+                        ? player.getTitle() + " does not play a card."
+                        : "No card played.");
+                }
+                if (game.deck.isEmpty() && running)
+                {
+                    System.out.println("The draw pile is empty. The round ends.");
+                    running = false;
+                }
+                if (running)
+                {
+                    if (game.skipNext)
+                    {
+                        game.skipNext = false;
+                        boolean penaltyCard = game.currentCard.isSpecialCard()
+                            && (game.currentCard.getCardType().equals("+2")
+                                || game.currentCard.getCardType().equals("+4"));
+                        game.currentTurn = (game.currentTurn + 2 * game.currentDirection
+                            + game.players.length) % game.players.length;
+                    }
+                    else
+                    {
+                        game.currentTurn = (game.currentTurn + game.currentDirection
+                            + game.players.length) % game.players.length;
+                    }
+                }
+                System.out.println("----------------------------------------");
+            }
+
+            if (!winnerFound)
+            {
+                System.out.println("Game over. No winner this round.");
+            }
+            String answer = "";
+            while (!answer.equalsIgnoreCase("y")
+                && !answer.equalsIgnoreCase("n")
+                && !answer.equalsIgnoreCase("yes")
+                && !answer.equalsIgnoreCase("no"))
+            {
+                System.out.print("Would you like to play again? (Y/N): ");
+                if (input.hasNextLine())
+                {
+                    answer = input.nextLine().trim();
+                }
+                else
+                {
+                    answer = "n";
+                }
+                if (!answer.equalsIgnoreCase("y")
+                    && !answer.equalsIgnoreCase("n")
+                    && !answer.equalsIgnoreCase("yes")
+                    && !answer.equalsIgnoreCase("no"))
+                {
+                    System.out.println("Invalid input. Please enter Y or N.");
+                }
+            }
+            playAgain = answer.equalsIgnoreCase("y")
+                || answer.equalsIgnoreCase("yes");
         }
-        Scanner input = new Scanner(System.in);
-        System.out.println("UNO prototype - local bot opponents");
-        System.out.println("Codes: R/B/G/Y + 0-9, + (+2), R (reverse), S (skip).");
-        System.out.println("Wild: WW; draw four: W4; draw: D; quit: Q.");
-        while (true)
-        {
-            System.out.println("Choose bot: 1 Simple, 2 Normal, 3 Master, or Q to quit:");
-            if (!input.hasNextLine())
-            {
-                System.out.println("Goodbye.");
-                return;
-            }
-            String answer = input.nextLine().trim();
-            if ("Q".equalsIgnoreCase(answer))
-            {
-                System.out.println("Goodbye.");
-                return;
-            }
-            if (!answer.matches("[123]"))
-            {
-                System.out.println("Invalid difficulty. Enter 1, 2, or 3.");
-                continue;
-            }
-            BotDifficulty difficulty = BotDifficulty.values()[Integer.parseInt(answer) - 1];
-            System.out.println("Selected bot: " + difficulty);
-            GameClass game = new GameClass(difficulty, input, System.out, new Random());
-            game.run(System.out);
-            return;
-        }
+        System.out.println("Thanks for playing!");
     }
 }

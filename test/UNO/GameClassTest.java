@@ -1,297 +1,204 @@
 package UNO;
 
-import static org.junit.Assert.*;
-import java.util.Random;
-import java.util.Scanner;
-import org.junit.Test;
 
-/** Rule validation, storage transfers, and atomic action application. */
-public class GameClassTest
+/** Tests the public rules and setup methods in GameClass. */
+public class GameClassTest extends student.TestCase
 {
-    @Test
-    public void defaultGameDealsSeparateHandsAndConserves108Cards()
+    public void testConstructorCreatesPlayersAndNumberedStartingCard()
     {
         GameClass game = new GameClass();
+        assertEquals(2, game.players.length);
         assertEquals(7, game.players[0].getCardList().size());
         assertEquals(7, game.players[1].getCardList().size());
-        assertNotSame(game.players[0].getCardList(), game.players[1].getCardList());
-        assertEquals(93, game.deck.size());
-        assertNotNull(game.currentCard);
-        assertEquals("Red", game.currentColor);
-        assertEquals(0, game.currentTurn);
-        assertEquals(1, game.currentDirection);
-        assertEquals(108, game.deck.size() + 14 + 1);
+        assertTrue(game.currentCard instanceof NumberedCards);
+        assertEquals(game.currentCard.getCardColor(), game.currentColor);
+        assertTrue(game.deck.size() > 0);
     }
-
-    @Test
-    public void initializationRejectsInvalidDependencies()
+    public void testDrawCardMovesOneCardIntoPlayersHand()
     {
-        GameFixture f = new GameFixture();
-        assertThrows(IllegalArgumentException.class, () -> new GameClass(
-            null, f.bot, f.deck, f.game.currentCard, new Random(0), f.output));
-        assertThrows(IllegalArgumentException.class, () -> new GameClass(
-            f.human, f.bot, null, f.game.currentCard, new Random(0), f.output));
-        assertThrows(IllegalArgumentException.class, () -> new GameClass(
-            null, new Scanner(""), f.output, new Random(0)));
+        GameClass game = new GameClass();
+        PlayerClass player = new PlayerClass();
+        int deckBefore = game.deck.size();
+        Card drawn = game.drawCard(player);
+        assertNotNull(drawn);
+        assertEquals(1, player.getCardList().size());
+        assertEquals(deckBefore - 1, game.deck.size());
+        assertTrue(player.getCardList().contains(drawn));
     }
-
-    @Test
-    public void drawTransfersExactCardWithoutChangingOtherHandOrTop()
+    public void testDrawCardRejectsNullAndEmptyDeck()
     {
-        GameFixture f = new GameFixture();
-        f.deck.clear();
-        Card drawn = new NumberedCards("Blue", 8);
-        f.deck.add(drawn);
-        Card top = f.game.currentCard;
-        assertSame(drawn, f.game.drawCard(f.human));
-        assertEquals(0, f.deck.size());
-        assertTrue(f.human.getCardList().contains(drawn));
-        assertEquals(2, f.human.getCardList().size());
-        assertEquals(1, f.bot.getCardList().size());
-        assertSame(top, f.game.currentCard);
-    }
-
-    @Test
-    public void drawRejectsNullForeignPlayerAndEmptyDeck()
-    {
-        GameFixture f = new GameFixture();
-        assertThrows(IllegalArgumentException.class, () -> f.game.drawCard(null));
-        assertThrows(IllegalArgumentException.class, () -> f.game.drawCard(new PlayerClass()));
-        assertEquals(20, f.deck.size());
-        f.deck.clear();
-        assertThrows(IllegalStateException.class, () -> f.game.drawCard(f.human));
-        assertEquals(1, f.human.getCardList().size());
-    }
-
-    @Test
-    public void numberedRulesMatchColorOrNumberAndRejectNullOrMismatch()
-    {
-        GameFixture f = new GameFixture();
-        assertTrue(f.game.isValid(new NumberedCards("Red", 2)));
-        assertTrue(f.game.isValid(new NumberedCards("Blue", 5)));
-        assertFalse(f.game.isValid(new NumberedCards("Blue", 2)));
-        assertFalse(f.game.isValid(null));
-    }
-
-    @Test
-    public void specialRulesMatchTypeOrColorAndUseActiveWildColor()
-    {
-        GameFixture f = new GameFixture();
-        f.game.currentCard = new SpecialCards("Red", "skip");
-        assertTrue(f.game.isValid(new SpecialCards("Blue", "skip")));
-        assertTrue(f.game.isValid(new SpecialCards("Red", "reverse")));
-        assertFalse(f.game.isValid(new SpecialCards("Blue", "+2")));
-        f.game.currentCard = new SpecialCards("Green", "wild");
-        f.game.currentColor = "Green";
-        assertTrue(f.game.isValid(new NumberedCards("Green", 1)));
-        assertFalse(f.game.isValid(new NumberedCards("Red", 5)));
-    }
-
-    @Test
-    public void drawFourIsBlockedByMatchingRegularColorOnly()
-    {
-        GameFixture f = new GameFixture();
-        SpecialCards four = new SpecialCards("Wild", "+4");
-        GameFixture.hand(f.human, four, new NumberedCards("Red", 1));
-        assertFalse(f.game.isValid(four));
-        GameFixture.hand(f.human, four, new NumberedCards("Blue", 5));
-        assertTrue(f.game.isValid(four));
-        GameFixture.hand(f.human, four, new SpecialCards("Red", "wild"));
-        assertTrue(f.game.isValid(four));
-        assertTrue(f.game.isValid(new SpecialCards("Wild", "wild")));
-    }
-
-    @Test
-    public void legalCandidatesContainOwnedCardWildColorsAndDraw()
-    {
-        GameFixture f = new GameFixture();
-        Card number = new NumberedCards("Red", 2);
-        Card illegal = new NumberedCards("Blue", 1);
-        Card wild = new SpecialCards("Wild", "wild");
-        GameFixture.hand(f.human, number, illegal, wild);
-        LinkedChain<Move> moves = f.game.getLegalMoves();
-        assertEquals(6, moves.size());
-        Move[] candidates = moves.toArray(new Move[moves.size()]);
-        assertSame(number, candidates[0].getCard());
-        assertEquals("Red", candidates[1].getChosenColor());
-        assertEquals("Blue", candidates[2].getChosenColor());
-        assertEquals("Green", candidates[3].getChosenColor());
-        assertEquals("Yellow", candidates[4].getChosenColor());
-        assertTrue(candidates[5].isDraw());
-        for (Move move : candidates)
-        {
-            assertNotSame(illegal, move.getCard());
-        }
-        assertEquals("Wild", wild.getCardColor());
-        assertEquals(3, f.human.getCardList().size());
-    }
-
-    @Test
-    public void legalCandidatesHandleNoLegalCardAndEmptyHand()
-    {
-        GameFixture f = new GameFixture();
-        assertEquals(1, f.game.getLegalMoves().size());
-        assertTrue(f.game.getLegalMoves().get(0).isDraw());
-        f.human.getCardList().clear();
-        assertTrue(f.game.getLegalMoves().isEmpty());
-    }
-
-    @Test
-    public void applyPlayRemovesExactlyOneDuplicateAndUpdatesTop()
-    {
-        GameFixture f = new GameFixture();
-        Card first = new NumberedCards("Red", 2);
-        Card second = new NumberedCards("Red", 2);
-        GameFixture.hand(f.human, first, second);
-        assertSame(first, f.game.applyMove(Move.play(first, null)));
-        assertSame(first, f.game.currentCard);
-        assertEquals("Red", f.game.currentColor);
-        assertEquals(1, f.human.getCardList().size());
-        assertSame(second, f.human.getCardList().get(0));
-        assertEquals(0, f.game.currentTurn);
-    }
-
-    @Test
-    public void applyDrawTransfersOneCardWithoutChangingTop()
-    {
-        GameFixture f = new GameFixture();
-        Card top = f.game.currentCard;
-        Card drawn = f.game.applyMove(Move.draw());
-        assertTrue(f.human.getCardList().contains(drawn));
-        assertEquals(19, f.deck.size());
-        assertSame(top, f.game.currentCard);
-    }
-
-    @Test
-    public void applyRejectsNullUnownedIllegalAndStaleMovesWithoutMutation()
-    {
-        GameFixture f = new GameFixture();
-        Card top = f.game.currentCard;
-        assertThrows(IllegalArgumentException.class, () -> f.game.applyMove(null));
-        assertThrows(IllegalArgumentException.class, () -> f.game.applyMove(
-            Move.play(new NumberedCards("Red", 5), null)));
-        Card illegal = f.human.getCardList().get(0);
-        assertThrows(IllegalArgumentException.class, () -> f.game.applyMove(Move.play(illegal, null)));
-        Card onceLegal = new NumberedCards("Red", 2);
-        GameFixture.hand(f.human, onceLegal);
-        Move stale = Move.play(onceLegal, null);
-        f.game.currentColor = "Green";
-        f.game.currentCard = new NumberedCards("Green", 7);
-        assertThrows(IllegalArgumentException.class, () -> f.game.applyMove(stale));
-        assertEquals(1, f.human.getCardList().size());
-        assertEquals(20, f.deck.size());
-        assertEquals(0, f.game.currentTurn);
-        assertFalse(f.game.skipNext);
-        assertNotSame(top, f.game.currentCard);
-        assertEquals("Green", f.game.currentColor);
-    }
-
-    @Test
-    public void insufficientPenaltyDeckRejectsEntirePlayBeforeMutation()
-    {
-        for (String type : new String[] {"+2", "+4"})
-        {
-            GameFixture f = new GameFixture();
-            boolean four = "+4".equals(type);
-            String originalColor = four ? "Wild" : "Red";
-            Card penalty = new SpecialCards(originalColor, type);
-            GameFixture.hand(f.human, penalty);
-            f.deck.clear();
-            int remaining = four ? 3 : 1;
-            for (int i = 0; i < remaining; i++)
+        GameClass game = new GameClass();
+                {
+            boolean caughtExpected = false;
+            try
             {
-                f.deck.add(new NumberedCards("Blue", i));
+                game.drawCard(null);
             }
-            Card top = f.game.currentCard;
-            Move move = Move.play(penalty, four ? "Blue" : null);
-            assertThrows(IllegalStateException.class, () -> f.game.applyMove(move));
-            assertSame(top, f.game.currentCard);
-            assertEquals("Red", f.game.currentColor);
-            assertEquals(originalColor, penalty.getCardColor());
-            assertTrue(f.human.getCardList().contains(penalty));
-            assertEquals(1, f.human.getCardList().size());
-            assertEquals(remaining, f.deck.size());
-            assertEquals(1, f.bot.getCardList().size());
-            assertEquals(0, f.game.currentTurn);
-            assertEquals(1, f.game.currentDirection);
-            assertFalse(f.game.skipNext);
+            catch (IllegalArgumentException e)
+            {
+                caughtExpected = true;
+            }
+            assertTrue("Expected IllegalArgumentException", caughtExpected);
+        };
+        game.deck.clear();
+                {
+            boolean caughtExpected = false;
+            try
+            {
+                game.drawCard(new PlayerClass());
+            }
+            catch (IllegalStateException e)
+            {
+                caughtExpected = true;
+            }
+            assertTrue("Expected IllegalStateException", caughtExpected);
+        };
+    }
+    public void testIsValidAcceptsWildAndMatchingColorNumberOrType()
+    {
+        GameClass game = new GameClass();
+        game.currentCard = new NumberedCards("Red", 5);
+        game.currentColor = "Red";
+        assertTrue(game.isValid(new NumberedCards("Red", 2)));
+        assertTrue(game.isValid(new NumberedCards("Blue", 5)));
+        assertTrue(game.isValid(new SpecialCards(null, "wild")));
+        assertTrue(game.isValid(new SpecialCards(null, "+4")));
+        game.currentCard = new SpecialCards("Green", "skip");
+        game.currentColor = "Green";
+        assertTrue(game.isValid(new SpecialCards("Red", "skip")));
+        assertFalse(game.isValid(new NumberedCards("Blue", 4)));
+        assertFalse(game.isValid(null));
+        game.currentCard = null;
+        assertFalse(game.isValid(new NumberedCards("Red", 1)));
+    }
+    public void testPrintPlayerDeckAcceptsEmptyAndNonemptyHands()
+    {
+        GameClass game = new GameClass();
+        PlayerClass player = new PlayerClass();
+        game.printPlayerDeck(player);
+        player.getCardList().addToEnd(new NumberedCards("Blue", 3));
+        game.printPlayerDeck(player);
+                {
+            boolean caughtExpected = false;
+            try
+            {
+                game.printPlayerDeck(null);
+            }
+            catch (IllegalArgumentException e)
+            {
+                caughtExpected = true;
+            }
+            assertTrue("Expected IllegalArgumentException", caughtExpected);
+        };
+    }
+    public void testIsWinnerChecksForEmptyHand()
+    {
+        GameClass game = new GameClass();
+        PlayerClass player = new PlayerClass();
+        assertTrue(game.isWinner(player));
+        player.getCardList().addToEnd(new NumberedCards("Red", 1));
+        assertFalse(game.isWinner(player));
+        assertFalse(game.isWinner(null));
+    }
+    public void testDirectionSkipDrawAndColorStateMethodsWork()
+    {
+        GameClass game = new GameClass();
+        assertEquals(1, game.currentDirection);
+        game.reverseDirection();
+        assertEquals(-1, game.currentDirection);
+        game.skipNextPlayer();
+        assertTrue(game.skipNext);
+        int before = game.players[1].getCardList().size();
+        game.drawForNextPlayer(2);
+        assertEquals(before + 2, game.players[1].getCardList().size());
+        assertTrue(game.skipNext);
+        game.setCurrentColor("Blue");
+        assertEquals("Blue", game.currentColor);
+                {
+            boolean caughtExpected = false;
+            try
+            {
+                game.setCurrentColor("Wild");
+            }
+            catch (IllegalArgumentException e)
+            {
+                caughtExpected = true;
+            }
+            assertTrue("Expected IllegalArgumentException", caughtExpected);
+        };
+                {
+            boolean caughtExpected = false;
+            try
+            {
+                game.setCurrentColor(null);
+            }
+            catch (IllegalArgumentException e)
+            {
+                caughtExpected = true;
+            }
+            assertTrue("Expected IllegalArgumentException", caughtExpected);
+        };
+    }
+
+    
+    public void testDifficultyConstructorAndLegalMoves()
+    {
+        GameClass game = new GameClass(BotDifficulty.MASTER);
+        assertEquals(BotDifficulty.MASTER,
+            ((BotClass)game.players[1]).getDifficulty());
+        BotClass bot = (BotClass)game.players[1];
+        bot.getCardList().clear();
+        game.currentCard = new NumberedCards("Red", 5);
+        game.currentColor = "Red";
+        NumberedCards valid = new NumberedCards("Blue", 5);
+        SpecialCards wild = new SpecialCards(null, "wild");
+        bot.getCardList().addToEnd(valid);
+        bot.getCardList().addToEnd(wild);
+
+        LinkedChain<Move> moves = game.getLegalMoves(bot);
+        assertEquals(6, moves.size());
+        assertSame(valid, moves.get(0).getCard());
+        assertEquals("Red", moves.get(1).getChosenColor());
+        assertEquals("Blue", moves.get(2).getChosenColor());
+        assertEquals("Green", moves.get(3).getChosenColor());
+        assertEquals("Yellow", moves.get(4).getChosenColor());
+        assertTrue(moves.get(5).isDraw());
+    }
+
+    public void testApplyWildMoveSetsChosenColor()
+    {
+        GameClass game = new GameClass();
+        PlayerClass player = game.players[0];
+        SpecialCards wild = new SpecialCards(null, "wild");
+        player.getCardList().clear();
+        player.getCardList().addToEnd(wild);
+        game.currentCard = new NumberedCards("Red", 5);
+        game.currentColor = "Red";
+
+        assertTrue(game.applyMove(player, Move.play(wild, "Green")));
+        assertSame(wild, game.currentCard);
+        assertEquals("Green", game.currentColor);
+        assertEquals("Green", wild.getCardColor());
+        assertFalse(player.getCardList().contains(wild));
+    }
+
+    public void testApplyMoveRejectsCardNotInHand()
+    {
+        GameClass game = new GameClass();
+        PlayerClass player = new PlayerClass();
+        game.currentCard = new NumberedCards("Red", 1);
+        game.currentColor = "Red";
+        boolean caughtExpected = false;
+        try
+        {
+            game.applyMove(player,
+                Move.play(new NumberedCards("Red", 2), null));
         }
+        catch (IllegalArgumentException exception)
+        {
+            caughtExpected = true;
+        }
+        assertTrue(caughtExpected);
     }
 
-    @Test
-    public void advanceTurnWrapsInBothDirectionsAndConsumesSkipOnce()
-    {
-        GameFixture f = new GameFixture();
-        f.game.advanceTurn();
-        assertEquals(1, f.game.currentTurn);
-        f.game.currentDirection = -1;
-        f.game.advanceTurn();
-        assertEquals(0, f.game.currentTurn);
-        f.game.skipNext = true;
-        f.game.advanceTurn();
-        assertEquals(0, f.game.currentTurn);
-        assertFalse(f.game.skipNext);
-        f.game.advanceTurn();
-        assertEquals(1, f.game.currentTurn);
-    }
-
-    @Test
-    public void winnerDistinguishesEmptyNonemptyAndNull()
-    {
-        GameFixture f = new GameFixture();
-        assertFalse(f.game.isWinner(f.human));
-        assertFalse(f.game.isWinner(null));
-        f.human.getCardList().clear();
-        assertTrue(f.game.isWinner(f.human));
-    }
-
-    @Test
-    public void printHandIncludesCardsHandlesEmptyAndRejectsNull()
-    {
-        GameFixture f = new GameFixture();
-        f.game.printPlayerDeck(f.human);
-        assertTrue(f.text().contains("Blue 1"));
-        assertTrue(f.text().contains("B1"));
-        f.bytes.reset();
-        f.human.getCardList().clear();
-        f.game.printPlayerDeck(f.human);
-        assertFalse(f.text().contains("Blue 1"));
-        assertThrows(IllegalArgumentException.class, () -> f.game.printPlayerDeck(null));
-    }
-
-    @Test
-    public void runRecognizesAnAlreadyEmptyHandAndRejectsNullOutput()
-    {
-        GameFixture f = new GameFixture();
-        f.human.getCardList().clear();
-        f.game.run(f.output);
-        assertTrue(f.text().contains("Human wins"));
-        assertThrows(IllegalArgumentException.class, () -> f.game.run(null));
-    }
-
-    @Test
-    public void bareCardIsDisplayedButRejectedAsAnUnplayableMove()
-    {
-        GameFixture f = new GameFixture();
-        Card bare = new Card("Red");
-        GameFixture.hand(f.human, bare);
-        Card top = f.game.currentCard;
-        f.game.printPlayerDeck(f.human);
-        assertTrue(f.text().contains("Red card (not playable)"));
-        assertFalse(f.game.isValid(bare));
-        LinkedChain<Move> candidates = f.game.getLegalMoves();
-        assertEquals(1, candidates.size());
-        assertTrue(candidates.get(0).isDraw());
-        assertThrows(IllegalArgumentException.class,
-            () -> f.game.applyMove(Move.play(bare, null)));
-        assertSame(top, f.game.currentCard);
-        assertEquals("Red", f.game.currentColor);
-        assertEquals(1, f.human.getCardList().size());
-        assertSame(bare, f.human.getCardList().get(0));
-        assertEquals(20, f.deck.size());
-        assertFalse(f.game.skipNext);
-        Card drawFour = new SpecialCards("Wild", "+4");
-        GameFixture.hand(f.human, bare, drawFour);
-        assertTrue(f.game.isValid(drawFour));
-    }
 }

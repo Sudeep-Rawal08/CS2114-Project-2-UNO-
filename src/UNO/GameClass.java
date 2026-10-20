@@ -1,158 +1,147 @@
 package UNO;
 
-import java.io.PrintStream;
 import java.util.Random;
-import java.util.Scanner;
 
-/** Owns game rules and turn state. */
+/** Coordinates the deck, turns, and rules of UNO. */
 public class GameClass
 {
     int currentDirection;
     int currentTurn;
-    boolean skipNext;
     PlayerClass[] players;
     LinkedChain<Card> deck;
     Card currentCard;
     String currentColor;
-    private final Random random;
-    final PrintStream output;
+    boolean skipNext;
+    private String pendingPenaltyMessage;
+    private Random random;
 
-    /** Initializes a 108-card game with separate seven-card hands. */
     public GameClass()
     {
-        this(BotDifficulty.SIMPLE, new Scanner(System.in), System.out, new Random());
+        this(BotDifficulty.SIMPLE);
     }
 
-    GameClass(BotDifficulty difficulty, Scanner input, PrintStream output, Random random)
+    public GameClass(BotDifficulty difficulty)
     {
-        this(new PlayerClass(input, output), new BotClass(difficulty), createDeck(),
-            new NumberedCards("Red", 0), random, output);
-        for (int i = 0; i < 7; i++)
+        if (difficulty == null)
+        {
+            throw new IllegalArgumentException("Difficulty must not be null.");
+        }
+        currentDirection = 1;
+        currentTurn = 0;
+        skipNext = false;
+        pendingPenaltyMessage = null;
+        random = new Random();
+        deck = new LinkedChain<Card>();
+        players = new PlayerClass[2];
+        players[0] = new PlayerClass();
+        players[1] = new BotClass(difficulty);
+
+        String[] colors = {"Red", "Blue", "Green", "Yellow"};
+        for (int i = 0; i < colors.length; i++)
+        {
+            String color = colors[i];
+            deck.addToEnd(new NumberedCards(color, 0));
+            for (int number = 1; number <= 9; number++)
+            {
+                deck.addToEnd(new NumberedCards(color, number));
+                deck.addToEnd(new NumberedCards(color, number));
+            }
+            for (int count = 0; count < 2; count++)
+            {
+                deck.addToEnd(new SpecialCards(color, "+2"));
+                deck.addToEnd(new SpecialCards(color, "reverse"));
+                deck.addToEnd(new SpecialCards(color, "skip"));
+            }
+        }
+        for (int count = 0; count < 4; count++)
+        {
+            deck.addToEnd(new SpecialCards(null, "wild"));
+            deck.addToEnd(new SpecialCards(null, "+4"));
+        }
+
+        shuffleDeck();
+        for (int count = 0; count < 7; count++)
         {
             drawCard(players[0]);
             drawCard(players[1]);
         }
+        setStartingCard();
     }
 
-    GameClass(PlayerClass human, BotClass bot, LinkedChain<Card> deck,
-        Card opening, Random random, PrintStream output)
+    private void shuffleDeck()
     {
-        if (human == null || bot == null || human == bot || deck == null
-            || opening == null || random == null || output == null
-            || !Card.isRegularColor(opening.getCardColor()))
+        LinkedChain<Card> shuffled = new LinkedChain<Card>();
+        while (!deck.isEmpty())
         {
-            throw new IllegalArgumentException("A complete game state is required");
+            int index = random.nextInt(deck.size());
+            Card card = deck.get(index);
+            deck.remove(card);
+            shuffled.addToEnd(card);
         }
-        players = new PlayerClass[] {human, bot};
-        this.deck = deck;
-        currentCard = opening;
-        currentColor = opening.getCardColor();
-        this.random = random;
-        this.output = output;
-        currentDirection = 1;
-        currentTurn = 0;
+        deck = shuffled;
     }
 
-    /** Transfers one randomly selected deck card to a registered player.
-     * @param player the recipient
-     * @return the exact transferred card
-     * @throws IllegalStateException if the deck is empty
-     */
-    public Card drawCard(PlayerClass player)
+    private void setStartingCard()
     {
-        if (player == null || (player != players[0] && player != players[1]))
+        int index = 0;
+        while (index < deck.size())
         {
-            throw new IllegalArgumentException("The player must belong to this game");
-        }
-        requireCards(1);
-        Card card = deck.get(random.nextInt(deck.size()));
-        deck.remove(card);
-        player.getCardList().add(card);
-        return card;
-    }
-
-    /** @param card the proposed card @return whether the current rules allow it */
-    public boolean isValid(Card card)
-    {
-        if (!(card instanceof NumberedCards) && !(card instanceof SpecialCards))
-        {
-            return false;
-        }
-        if (card instanceof SpecialCards && ((SpecialCards)card).isWild())
-        {
-            if ("+4".equals(((SpecialCards)card).getCardType()))
+            Card card = deck.get(index);
+            if (card.isNumberedCard())
             {
-                Card[] hand = currentPlayer().getCardList().toArray(
-                    new Card[currentPlayer().getCardList().size()]);
-                for (Card owned : hand)
-                {
-                    boolean wild = owned instanceof SpecialCards
-                        && ((SpecialCards)owned).isWild();
-                    boolean playable = owned instanceof NumberedCards
-                        || owned instanceof SpecialCards;
-                    if (playable && !wild && currentColor.equals(owned.getCardColor()))
-                    {
-                        return false;
-                    }
-                }
+                currentCard = card;
+                deck.remove(card);
+                currentColor = card.getCardColor();
+                return;
             }
-            return true;
+            index++;
         }
-        if (currentColor.equals(card.getCardColor()))
-        {
-            return true;
-        }
-        if (card instanceof NumberedCards && currentCard instanceof NumberedCards)
-        {
-            return ((NumberedCards)card).getCardNumber()
-                == ((NumberedCards)currentCard).getCardNumber();
-        }
-        return card instanceof SpecialCards && currentCard instanceof SpecialCards
-            && ((SpecialCards)card).getCardType().equals(
-                ((SpecialCards)currentCard).getCardType());
+        throw new IllegalStateException("No numbered starting card is available.");
     }
 
-    /** @param player the player whose hand should be displayed */
-    public void printPlayerDeck(PlayerClass player)
+    public Card drawCard(PlayerClass player)
     {
         if (player == null)
         {
-            throw new IllegalArgumentException("A player is required");
+            throw new IllegalArgumentException("Player must not be null.");
         }
-        Card[] hand = player.getCardList().toArray(new Card[player.getCardList().size()]);
-        output.println("Your hand (" + hand.length + " cards):");
-        for (Card card : hand)
+        if (deck.isEmpty())
         {
-            String description = card instanceof NumberedCards || card instanceof SpecialCards
-                ? card.toString() : card.getCardColor() + " card (not playable)";
-            output.println("  " + PlayerClass.cardCode(card) + " = " + description);
+            throw new IllegalStateException("No cards are available to draw.");
         }
+        int index = random.nextInt(deck.size());
+        Card card = deck.get(index);
+        deck.remove(card);
+        player.getCardList().addToEnd(card);
+        return card;
     }
 
-    /** @param player the player to check @return true only for a non-null empty hand */
-    public boolean isWinner(PlayerClass player)
-    {
-        return player != null && player.getCardList().isEmpty();
-    }
 
-    /** @return legal plays in hand order, followed by a draw; empty for a winner */
+    /** Returns legal moves for the bot. */
     public LinkedChain<Move> getLegalMoves()
     {
-        LinkedChain<Move> moves = new LinkedChain<Move>();
-        LinkedChain<Card> hand = currentPlayer().getCardList();
-        if (hand.isEmpty())
+        return getLegalMoves(players[1]);
+    }
+
+    /** Returns legal play moves and one draw move for the selected player. */
+    public LinkedChain<Move> getLegalMoves(PlayerClass player)
+    {
+        if (player == null)
         {
-            return moves;
+            throw new IllegalArgumentException("Player must not be null.");
         }
-        for (Card card : hand.toArray(new Card[hand.size()]))
+        LinkedChain<Move> moves = new LinkedChain<Move>();
+        for (int i = 0; i < player.getCardList().size(); i++)
         {
+            Card card = player.getCardList().get(i);
             if (isValid(card))
             {
-                if (card instanceof SpecialCards && ((SpecialCards)card).isWild())
+                if (card.isWildCard())
                 {
-                    for (String color : Card.regularColors())
+                    String[] colors = {"Red", "Blue", "Green", "Yellow"};
+                    for (int j = 0; j < colors.length; j++)
                     {
-                        moves.addToEnd(Move.play(card, color));
+                        moves.addToEnd(Move.play(card, colors[j]));
                     }
                 }
                 else
@@ -165,135 +154,132 @@ public class GameClass
         return moves;
     }
 
-    /** Applies one action after rechecking ownership and legality.
-     * Turn advancement remains the game loop's responsibility.
-     * @param move the action to perform
-     * @return the played card, or the newly drawn card for a draw action
-     */
-    public Card applyMove(Move move)
+    /** Applies a move for the player whose turn is active. */
+    public boolean applyMove(Move move)
     {
-        if (move == null)
+        return applyMove(players[currentTurn], move);
+    }
+
+    /** Applies a move chosen by a player. */
+    public boolean applyMove(PlayerClass player, Move move)
+    {
+        if (player == null || move == null)
         {
-            throw new IllegalArgumentException("A move is required");
+            throw new IllegalArgumentException("Player and move are required.");
         }
         if (move.isDraw())
         {
-            return drawCard(currentPlayer());
-        }
-        Card card = move.getCard();
-        if (!currentPlayer().getCardList().contains(card) || !isValid(card))
-        {
-            throw new IllegalArgumentException("The card must be owned and legal");
-        }
-        SpecialCards special = card instanceof SpecialCards ? (SpecialCards)card : null;
-        if (special != null)
-        {
-            if ("+2".equals(special.getCardType()))
+            Card drawn = drawCard(player);
+            if (!player.isBot())
             {
-                requireCards(2);
+                System.out.println("You drew: " + drawn);
             }
-            else if ("+4".equals(special.getCardType()))
+            if (player.isBot() && isValid(drawn))
             {
-                requireCards(4);
-            }
-        }
-        currentPlayer().getCardList().remove(card);
-        currentCard = card;
-        currentColor = move.getChosenColor() == null
-            ? card.getCardColor() : move.getChosenColor();
-        if (special != null)
-        {
-            switch (special.getCardType())
-            {
-                case "reverse": special.reverseOrder(this); break;
-                case "skip": special.skipPlayer(this); break;
-                case "+2": special.addTwo(this); break;
-                case "+4": special.addFour(this, move.getChosenColor()); break;
-                case "wild": special.playedWildcard(this, move.getChosenColor()); break;
-                default: break;
-            }
-        }
-        return card;
-    }
-
-    /** Advances in the selected direction, consuming one pending skip. */
-    public void advanceTurn()
-    {
-        int steps = skipNext ? 2 : 1;
-        currentTurn = Math.floorMod(currentTurn + steps * currentDirection, players.length);
-        skipNext = false;
-    }
-
-    /** Runs until a winner, quit/EOF, or documented deck depletion.
-     * @param out destination for round-level status messages
-     */
-    public void run(PrintStream out)
-    {
-        if (out == null)
-        {
-            throw new IllegalArgumentException("Output is required");
-        }
-        while (true)
-        {
-            for (int i = 0; i < players.length; i++)
-            {
-                if (isWinner(players[i]))
+                String color = null;
+                if (drawn.isWildCard())
                 {
-                    out.println((i == 0 ? "Human" : "Bot") + " wins!");
-                    return;
+                    color = player.chooseColor();
                 }
+                System.out.println("Bot (" + player.getTitle()
+                    + ") plays: " + drawn);
+                if (color != null)
+                {
+                    System.out.println("Bot (" + player.getTitle()
+                        + ") chooses " + color + ".");
+                }
+                return applyMove(player, Move.play(drawn, color));
             }
-            PlayerClass player = currentPlayer();
-            out.println("\nTop: " + currentCard + "; active color: " + currentColor);
-            out.println("Turn: " + (currentTurn == 0 ? "Human" : "Bot")
-                + "; direction: " + currentDirection
-                + "; opponent cards: " + nextPlayer().getCardList().size());
-            if (!(player instanceof BotClass))
-            {
-                printPlayerDeck(player);
-            }
-            try
-            {
-                player.playCard(this);
-            }
-            catch (IllegalStateException exception)
-            {
-                out.println("Round stopped: no cards are available.");
-                return;
-            }
-            if (player.hasQuit())
-            {
-                out.println("Round ended by quit or end of input.");
-                return;
-            }
-            if (!isWinner(player))
-            {
-                advanceTurn();
-            }
+            return false;
         }
-    }
 
-    PlayerClass currentPlayer()
-    {
-        return players[currentTurn];
-    }
-
-    PlayerClass nextPlayer()
-    {
-        return players[Math.floorMod(currentTurn + currentDirection, players.length)];
-    }
-
-    void requireCards(int count)
-    {
-        if (deck.size() < count)
+        Card card = move.getCard();
+        if (!player.getCardList().contains(card) || !isValid(card))
         {
-            throw new IllegalStateException("No cards are available");
+            throw new IllegalArgumentException("The selected card cannot be played.");
         }
+        if (card.isWildCard() && !Card.isRegularColor(move.getChosenColor()))
+        {
+            throw new IllegalArgumentException("A wild card needs a chosen color.");
+        }
+        if (!card.isWildCard() && move.getChosenColor() != null)
+        {
+            throw new IllegalArgumentException("Only wild cards choose a color.");
+        }
+
+        player.getCardList().remove(card);
+        currentCard = card;
+        if (card.isSpecialCard())
+        {
+            if (!card.isWildCard())
+            {
+                currentColor = card.getCardColor();
+            }
+            card.playSpecialEffect(this, move.getChosenColor());
+        }
+        else
+        {
+            currentColor = card.getCardColor();
+        }
+        return true;
+    }
+
+    public boolean isValid(Card card)
+    {
+        if (card == null || currentCard == null)
+        {
+            return false;
+        }
+        if (card.isWildCard())
+        {
+            return true;
+        }
+        if (card.getCardColor() != null
+            && card.getCardColor().equals(currentColor))
+        {
+            return true;
+        }
+        if (card.isNumberedCard() && currentCard.isNumberedCard())
+        {
+            return card.getCardNumber() == currentCard.getCardNumber();
+        }
+        if (card.isSpecialCard() && currentCard.isSpecialCard())
+        {
+            return card.getCardType().equals(currentCard.getCardType());
+        }
+        return false;
+    }
+
+    public void printPlayerDeck(PlayerClass player)
+    {
+        if (player == null)
+        {
+            throw new IllegalArgumentException("Player must not be null.");
+        }
+        LinkedChain<Card> hand = player.getCardList();
+        if (hand.isEmpty())
+        {
+            System.out.println("(no cards)");
+            return;
+        }
+        for (int i = 0; i < hand.size(); i++)
+        {
+            System.out.println((i + 1) + ". " + hand.get(i));
+        }
+    }
+
+    public boolean isWinner(PlayerClass player)
+    {
+        return player != null && player.getCardList().isEmpty();
     }
 
     void reverseDirection()
     {
         currentDirection = -currentDirection;
+        if (players.length == 2)
+        {
+            skipNext = true;
+        }
     }
 
     void skipNextPlayer()
@@ -301,52 +287,44 @@ public class GameClass
         skipNext = true;
     }
 
-    void drawForNextPlayer(int count)
+    void drawForNextPlayer(int numberOfCards)
     {
-        requireCards(count);
-        PlayerClass recipient = nextPlayer();
-        for (int i = 0; i < count; i++)
+        int next = (currentTurn + currentDirection + players.length)
+            % players.length;
+        for (int i = 0; i < numberOfCards; i++)
         {
-            drawCard(recipient);
+            drawCard(players[next]);
+        }
+        if (players[next].isBot())
+        {
+            pendingPenaltyMessage = players[next].getTitle()
+                + " was forced to draw " + numberOfCards
+                + " cards and its turn was skipped.";
+        }
+        else
+        {
+            pendingPenaltyMessage = "You were forced to draw " + numberOfCards
+                + " cards and your turn was skipped.";
+        }
+        skipNext = true;
+    }
+
+    void printPendingPenaltyMessage()
+    {
+        if (pendingPenaltyMessage != null)
+        {
+            System.out.println(pendingPenaltyMessage);
+            pendingPenaltyMessage = null;
         }
     }
 
     void setCurrentColor(String color)
     {
-        if (!Card.isRegularColor(color))
+        if (color == null || !(color.equals("Red") || color.equals("Blue")
+            || color.equals("Green") || color.equals("Yellow")))
         {
-            throw new IllegalArgumentException("A regular color is required");
+            throw new IllegalArgumentException("Unsupported card color.");
         }
         currentColor = color;
-    }
-
-    private static LinkedChain<Card> createDeck()
-    {
-        LinkedChain<Card> cards = new LinkedChain<Card>();
-        for (String color : Card.regularColors())
-        {
-            // Red zero is already the opening card on the table.
-            if (!"Red".equals(color))
-            {
-                cards.add(new NumberedCards(color, 0));
-            }
-            for (int copy = 0; copy < 2; copy++)
-            {
-                for (int number = 1; number <= 9; number++)
-                {
-                    cards.add(new NumberedCards(color, number));
-                }
-                for (String type : new String[] {"+2", "reverse", "skip"})
-                {
-                    cards.add(new SpecialCards(color, type));
-                }
-            }
-        }
-        for (int copy = 0; copy < 4; copy++)
-        {
-            cards.add(new SpecialCards("Wild", "wild"));
-            cards.add(new SpecialCards("Wild", "+4"));
-        }
-        return cards;
     }
 }

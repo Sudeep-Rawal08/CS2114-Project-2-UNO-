@@ -1,162 +1,157 @@
 package UNO;
 
-/** A player whose legal action is chosen by a local strategy. */
+/** A bot that chooses moves according to its difficulty setting. */
 public class BotClass extends PlayerClass
 {
     private final BotDifficulty difficulty;
 
-    /** Creates the original first-legal-move bot. */
     public BotClass()
     {
         this(BotDifficulty.SIMPLE);
     }
 
-    /** @param difficulty the local decision strategy to use */
-    public BotClass(BotDifficulty difficulty)
+    public BotClass(BotDifficulty selectedDifficulty)
     {
-        if (difficulty == null)
+        if (selectedDifficulty == null)
         {
-            throw new IllegalArgumentException("Bot difficulty is required");
+            throw new IllegalArgumentException("Difficulty must not be null.");
         }
-        this.difficulty = difficulty;
+        difficulty = selectedDifficulty;
     }
 
-    /** @return the selected local difficulty */
+    @Override
+    public boolean isBot()
+    {
+        return true;
+    }
+
+    @Override
+    public String getTitle()
+    {
+        return "Bot (" + difficulty + ")";
+    }
+
     public BotDifficulty getDifficulty()
     {
         return difficulty;
     }
-    /** Selects a legal action without changing cards or game state.
-     * @param game this bot's active game
-     * @return a play, a draw, or null if the hand is already empty
-     */
+
+    /** Chooses one move from the legal moves offered by the game. */
     public Move chooseMove(GameClass game)
     {
-        requireTurn(game);
-        LinkedChain<Move> legal = game.getLegalMoves();
-        Move[] candidates = legal.toArray(new Move[legal.size()]);
-        if (candidates.length == 0)
+        if (game == null)
         {
-            return null;
+            throw new IllegalArgumentException("Game must not be null.");
         }
-        if (difficulty == BotDifficulty.SIMPLE)
+        LinkedChain<Move> moves = game.getLegalMoves(this);
+        Move chosen = Move.draw();
+        int bestScore = -1;
+        for (int i = 0; i < moves.size(); i++)
         {
-            return candidates[0];
-        }
-        Card[] hand = getCardList().toArray(new Card[getCardList().size()]);
-        Move best = null;
-        int bestScore = Integer.MIN_VALUE;
-        for (Move move : candidates)
-        {
-            if (!move.isDraw())
+            Move candidate = moves.get(i);
+            if (candidate.isDraw())
             {
-                int score = score(move, hand, game.nextPlayer().getCardList().size());
+                // Keep the draw move only when no playable card exists.
+            }
+            else if (difficulty == BotDifficulty.SIMPLE)
+            {
+                return candidate;
+            }
+            else
+            {
+                int score = scoreMove(candidate);
                 if (score > bestScore)
                 {
-                    best = move;
                     bestScore = score;
+                    chosen = candidate;
                 }
             }
         }
-        return best == null ? candidates[candidates.length - 1] : best;
+        return chosen;
     }
 
     @Override
     public boolean playCard(GameClass game)
     {
-        Move selected = chooseMove(game);
-        if (selected == null)
+        if (game == null)
         {
-            return false;
+            throw new IllegalArgumentException("Game must not be null.");
         }
-        if (selected.isDraw())
+        Move move = chooseMove(game);
+        if (move.isDraw())
         {
-            Card drawn = game.applyMove(selected);
-            game.output.println("Bot (" + difficulty + ") draws one card.");
-            if (!game.isValid(drawn))
-            {
-                game.output.println("Bot passes.");
-                return false;
-            }
-            selected = moveForDrawnCard(drawn, game);
+            System.out.println(getTitle() + " draws a card.");
+            return game.applyMove(this, move);
         }
-        Card played = game.applyMove(selected);
-        game.output.println("Bot (" + difficulty + ") plays: " + played);
-        return true;
+        System.out.println(getTitle() + " plays: " + move.getCard());
+        if (move.getChosenColor() != null)
+        {
+            System.out.println(getTitle() + " chooses " + move.getChosenColor() + ".");
+        }
+        return game.applyMove(this, move);
     }
 
-    private Move moveForDrawnCard(Card drawn, GameClass game)
+    private int scoreMove(Move move)
     {
-        if (!(drawn instanceof SpecialCards) || !((SpecialCards)drawn).isWild())
+        Card card = move.getCard();
+        int score = 1;
+        if (card.isSpecialCard())
         {
-            return Move.play(drawn, null);
+            String type = card.getCardType();
+            if (type.equals("+2")) score += 4;
+            if (type.equals("skip")) score += 3;
+            if (type.equals("reverse")) score += 2;
+            if (type.equals("+4")) score += 5;
+            if (type.equals("wild")) score += 3;
         }
-        Move best = Move.play(drawn, "Red");
-        if (difficulty != BotDifficulty.SIMPLE)
+        if (difficulty == BotDifficulty.MASTER)
         {
-            Card[] hand = getCardList().toArray(new Card[getCardList().size()]);
-            int bestScore = Integer.MIN_VALUE;
-            for (String color : Card.regularColors())
+            String targetColor = move.getChosenColor();
+            if (targetColor == null)
             {
-                Move candidate = Move.play(drawn, color);
-                int score = score(candidate, hand, game.nextPlayer().getCardList().size());
-                if (score > bestScore)
+                targetColor = card.getCardColor();
+            }
+            for (int i = 0; i < cardHand.size(); i++)
+            {
+                Card held = cardHand.get(i);
+                if (held != card && targetColor.equals(held.getCardColor()))
                 {
-                    best = candidate;
-                    bestScore = score;
+                    score += 2;
+                }
+            }
+            if (cardHand.size() == 1)
+            {
+                score += 6;
+            }
+        }
+        return score;
+    }
+
+    /** Selects the color most common in the bot's hand. */
+    @Override
+    public String chooseColor()
+    {
+        String[] colors = {"Red", "Blue", "Green", "Yellow"};
+        int[] counts = new int[colors.length];
+        for (int i = 0; i < cardHand.size(); i++)
+        {
+            String color = cardHand.get(i).getCardColor();
+            for (int j = 0; j < colors.length; j++)
+            {
+                if (colors[j].equals(color))
+                {
+                    counts[j]++;
                 }
             }
         }
-        return best;
-    }
-
-    private int score(Move move, Card[] hand, int opponentCards)
-    {
-        Card selected = move.getCard();
-        boolean wild = selected instanceof SpecialCards && ((SpecialCards)selected).isWild();
-        String color = wild ? move.getChosenColor() : selected.getCardColor();
-        int matching = 0;
-        for (Card card : hand)
+        int best = 0;
+        for (int i = 1; i < counts.length; i++)
         {
-            if (card != selected && color.equals(card.getCardColor())
-                && !(card instanceof SpecialCards && ((SpecialCards)card).isWild()))
+            if (counts[i] > counts[best])
             {
-                matching++;
+                best = i;
             }
         }
-        if (difficulty == BotDifficulty.NORMAL)
-        {
-            return matching * 10 - (wild ? 1000 : 0);
-        }
-        if (hand.length == 1)
-        {
-            return 1000000;
-        }
-        int result = matching * 10 - (wild ? 20 : 0);
-        if (opponentCards <= 2 && selected instanceof SpecialCards)
-        {
-            String type = ((SpecialCards)selected).getCardType();
-            if ("skip".equals(type))
-            {
-                result += 1000;
-            }
-            else if ("+2".equals(type))
-            {
-                result += 2000;
-            }
-            else if ("+4".equals(type))
-            {
-                result += 4000;
-            }
-        }
-        return result;
-    }
-
-    private void requireTurn(GameClass game)
-    {
-        if (game == null || game.currentPlayer() != this)
-        {
-            throw new IllegalArgumentException("This must be the bot's turn");
-        }
+        return colors[best];
     }
 }

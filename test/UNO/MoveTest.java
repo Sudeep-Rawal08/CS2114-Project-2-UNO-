@@ -1,13 +1,17 @@
 package UNO;
 
-import static org.junit.Assert.*;
-import org.junit.Test;
-
-/** Action requests validate their fields before entering the game. */
-public class MoveTest
+/** JUnit 4-compatible tests for Move. */
+public class MoveTest extends student.TestCase
 {
-    @Test
-    public void playRetainsTheExactOwnedCard()
+    public void testDrawMove()
+    {
+        Move move = Move.draw();
+        assertTrue(move.isDraw());
+        assertNull(move.getCard());
+        assertNull(move.getChosenColor());
+    }
+
+    public void testPlayNumberedCard()
     {
         Card card = new NumberedCards("Blue", 4);
         Move move = Move.play(card, null);
@@ -16,34 +20,61 @@ public class MoveTest
         assertNull(move.getChosenColor());
     }
 
-    @Test
-    public void drawHasNoCardOrChosenColor()
+    public void testPlayWildWithChosenColor()
     {
-        Move move = Move.draw();
-        assertTrue(move.isDraw());
-        assertNull(move.getCard());
-        assertNull(move.getChosenColor());
-    }
-
-    @Test
-    public void wildcardMoveDoesNotMutateTheCard()
-    {
-        Card card = new SpecialCards("Wild", "wild");
+        Card card = new SpecialCards(null, "wild");
         Move move = Move.play(card, "Green");
+        assertSame(card, move.getCard());
         assertEquals("Green", move.getChosenColor());
-        assertEquals("Wild", card.getCardColor());
     }
 
-    @Test
-    public void playRejectsNullCardAndInvalidColorCombinations()
+    public void testPlayPlusFourWithChosenColor()
     {
-        Card number = new NumberedCards("Red", 5);
-        Card wild = new SpecialCards("Wild", "+4");
-        assertThrows(IllegalArgumentException.class, () -> Move.play(null, null));
-        assertThrows(IllegalArgumentException.class, () -> Move.play(number, "Blue"));
-        for (String invalid : new String[] {null, "Wild", "Purple", ""})
+        Card card = new SpecialCards(null, "+4");
+        Move move = Move.play(card, "Yellow");
+        assertSame(card, move.getCard());
+        assertEquals("Yellow", move.getChosenColor());
+    }
+
+    public void testRejectNullCard()
+    {
+        boolean caught = false;
+        try
         {
-            assertThrows(IllegalArgumentException.class, () -> Move.play(wild, invalid));
+            Move.play(null, null);
         }
+        catch (IllegalArgumentException exception)
+        {
+            caught = true;
+        }
+        assertTrue(caught);
+    }
+
+    public void testRejectInvalidWildColor()
+    {
+        boolean caught = false;
+        try
+        {
+            Move.play(new SpecialCards(null, "wild"), "Wild");
+        }
+        catch (IllegalArgumentException exception)
+        {
+            caught = true;
+        }
+        assertTrue(caught);
+    }
+
+    public void testRejectColorOnRegularCard()
+    {
+        boolean caught = false;
+        try
+        {
+            Move.play(new NumberedCards("Red", 3), "Blue");
+        }
+        catch (IllegalArgumentException exception)
+        {
+            caught = true;
+        }
+        assertTrue(caught);
     }
 }
