@@ -3,16 +3,20 @@
 A console UNO game for one human against a Simple, Normal, or Master bot. Hands, the draw deck, and legal moves use the supplied generic LinkedChain.
 
 ## Run and Test
-
-Use JDK 11 or newer. Eclipse compiler settings target Java 8, which also runs on Java 17. JUnit 4.13.2 and Hamcrest 3.0 are included in `lib`; their license texts are in `lib/licenses`.
-
-In Eclipse, import this folder as an existing project. Run `src/UNO/UnoGame.java` with **Run As > Java Application**. Run the `test` source folder with **Run As > JUnit Test**. If Eclipse has stale compiled files, refresh the project with F5 and use **Project > Clean**.
+Download the files in Eclipse and run 'UNO' package or 'UnoGame.java'. Tests are also included.
 
 ## Controls
 
-Choose `1` Simple, `2` Normal, or `3` Master. Enter a card code shown beside a card in your hand: `R5` means Red 5, `B+` means Blue Draw Two, `GS` means Green Skip, and `YR` means Yellow Reverse. `WW` is Wild, `W4` is Draw Four, `D` draws, and `Q` quits. For a Wild, enter Red, Blue, Green, or Yellow (or R/B/G/Y). Input is case-insensitive.
+Choose `1` Simple, `2` Normal, or `3` Master for bot difficulty. Simple plays the first card it can find, while Master thinks ahead and tries to find the best move. 
 
-A legal drawn card is played immediately; an illegal drawn card stays in the hand and ends the turn. Draw Four is rejected if the player has a regular-colored card matching the active color. Skip and draw penalties skip the opponent. Reverse changes direction; in this two-player prototype it still passes play to the other player. An empty draw deck stops the round, as specified.
+To play a card, type the number next to it. For example, if your hand is:
+1. Green 5
+2. Yellow 4
+3. +4
+
+You would type '3' in order to play the '+4'. Playing a Wild card or +4 card allows you to choose the color. Input is case-insensitive.
+
+A legal drawn card gives the user the choice to either play it or not; an illegal drawn card stays in the hand and ends the turn. Skip and draw penalties skip the opponent. Reverse changes direction; in this two-player prototype it skips the other player. An empty draw deck stops the round, as specified.
 
 ## Reflection
 
