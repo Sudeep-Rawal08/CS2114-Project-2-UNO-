@@ -39,27 +39,26 @@ We refined the smarter-bot stretch goal into three local difficulty levels. Mast
 
 Fill in each team member's actual contribution before submission.
 
-| Class or test file | Contributor | Work performed |
-|---|---|---|
-| `src/UNO/LinkedChain.java` | CS 2114 Staff | Provided; unchanged |
-| `src/UNO/Card.java` | | |
-| `src/UNO/NumberedCards.java` | | |
-| `src/UNO/SpecialCards.java` | | |
-| `src/UNO/Move.java` | | |
-| `src/UNO/BotDifficulty.java` | | |
-| `src/UNO/GameClass.java` | | |
-| `src/UNO/PlayerClass.java` | | |
-| `src/UNO/BotClass.java` | | |
-| `src/UNO/UnoGame.java` | | |
-| `test/UNO/CardTest.java` | | |
-| `test/UNO/MoveTest.java` | | |
-| `test/UNO/LinkedChainReuseTest.java` | | |
-| `test/UNO/GameClassTest.java` | | |
-| `test/UNO/SpecialCardsTest.java` | | |
-| `test/UNO/PlayerClassTest.java` | | |
-| `test/UNO/BotClassTest.java` | | |
-| `test/UNO/UnoGameTest.java` | | |
-| `test/UNO/GameFixture.java` | | |
+| Class or test file | Contributor |
+|---|---|
+| `src/UNO/LinkedChain.java` | CS 2114 Staff (provided) |
+| `src/UNO/Card.java` | Edward Wei, Greek Yuan |
+| `src/UNO/NumberedCards.java` | Sudeep Rawal, Greek Yuan |
+| `src/UNO/SpecialCards.java` | Sudeep Rawal, Edward Wei, Greek Yuan |
+| `src/UNO/Move.java` | Sudeep Rawal, Edward Wei, Greek Yuan |
+| `src/UNO/BotDifficulty.java` | Edward Wei, Greek Yuan |
+| `src/UNO/GameClass.java` | Sudeep Rawal, Edward Wei, Greek Yuan |
+| `src/UNO/PlayerClass.java` | Sudeep Rawal, Edward Wei, Greek Yuan |
+| `src/UNO/BotClass.java` | Sudeep Rawal, Edward Wei, Greek Yuan |
+| `src/UNO/UnoGame.java` | Sudeep Rawal, Edward Wei |
+| `test/UNO/CardTest.java` | Sudeep Rawal, Greek Yuan |
+| `test/UNO/MoveTest.java` | Sudeep Rawal, Edward Wei, Greek Yuan |
+| `test/UNO/LinkedChainReuseTest.java` | Greek Yuan, Edward Wei |
+| `test/UNO/GameClassTest.java` | Sudeep Rawal |
+| `test/UNO/SpecialCardsTest.java` | Sudeep Rawal, Edward Wei |
+| `test/UNO/PlayerClassTest.java` | Edward Wei, Greek Yuan |
+| `test/UNO/BotClassTest.java` | Sudeep Rawal, Greek Yuan |
+| `test/UNO/UnoGameTest.java` | Sudeep Rawal, Edward Wei |
 
 ## GenAI Use
 
