@@ -14,7 +14,7 @@ To play a card, type the number next to it. For example, if your hand is:
 2. Yellow 4
 3. +4
 
-You would type '3' in order to play the '+4'. Playing a Wild card or +4 card allows you to choose the color. Input is case-insensitive.
+You would type `3` in order to play the `+4`. Playing a Wild card or +4 card allows you to choose the color. Input is case-insensitive.
 
 A legal drawn card gives the user the choice to either play it or not; an illegal drawn card stays in the hand and ends the turn. Skip and draw penalties skip the opponent. Reverse changes direction; in this two-player prototype it skips the other player. An empty draw deck stops the round, as specified.
 
