@@ -201,4 +201,53 @@ public class GameClassTest extends student.TestCase
         assertTrue(caughtExpected);
     }
 
+    public void testLegalMovesHandleEmptyHandAndRejectNullPlayer()
+    {
+        GameClass game = new GameClass();
+        game.players[1].getCardList().clear();
+        LinkedChain<Move> moves = game.getLegalMoves();
+        assertEquals(1, moves.size());
+        assertTrue(moves.get(0).isDraw());
+        try
+        {
+            game.getLegalMoves(null);
+            fail("Expected invalid player");
+        }
+        catch (IllegalArgumentException expected)
+        {
+            assertTrue(game.players[1].getCardList().isEmpty());
+        }
+    }
+
+    public void testCurrentPlayerApplyMoveAndNullRejectionPreserveState()
+    {
+        GameClass game = new GameClass();
+        game.currentTurn = 0;
+        PlayerClass player = game.players[0];
+        player.getCardList().clear();
+        Card card = new NumberedCards(game.currentColor, 8);
+        player.getCardList().addToEnd(card);
+        assertTrue(game.applyMove(Move.play(card, null)));
+        assertSame(card, game.currentCard);
+        assertTrue(player.getCardList().isEmpty());
+        try
+        {
+            game.applyMove((Move)null);
+            fail("Expected invalid move");
+        }
+        catch (IllegalArgumentException expected)
+        {
+            assertSame(card, game.currentCard);
+        }
+        try
+        {
+            game.applyMove(null, Move.draw());
+            fail("Expected invalid player");
+        }
+        catch (IllegalArgumentException expected)
+        {
+            assertTrue(player.getCardList().isEmpty());
+        }
+    }
+
 }

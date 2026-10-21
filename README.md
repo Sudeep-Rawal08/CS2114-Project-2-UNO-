@@ -3,7 +3,7 @@
 A console UNO game for one human against a Simple, Normal, or Master bot. Hands, the draw deck, and legal moves use the supplied generic LinkedChain.
 
 ## Run and Test
-Download the files in Eclipse and run 'UNO' package or 'UnoGame.java'. Tests are also included.
+Import this project and the course CS2-Support project into the same Eclipse workspace. Run UnoGame.java as a Java Application and the test folder as JUnit Tests; CS2-Support provides student.TestCase and its test dependencies.
 
 ## Controls
 
@@ -25,7 +25,7 @@ A legal drawn card gives the user the choice to either play it or not; an illega
 - **Unknowns:** We had not defined a clear list of unknowns before building this prototype. During implementation, we clarified the supplied LinkedChain API, legal-move generation, and console-input testing. Manual playtesting is still needed to evaluate usability and the differences between bot difficulty levels.
 - **Remaining limitations:** Manual gameplay review is pending. The prototype uses local bots; an external model API is not implemented. A depleted deck ends the round instead of recycling discards.
 
-For complexity, n is the size of the collection being processed; when both the hand and deck are involved, use the larger size. For console-input methods, n also includes the input-line length. Card/Move accessors and turn updates are O(1). Game setup, drawing, hand display, fixed draw penalties, and applying a move are O(n). `isValid` is O(n) in the worst-case +4 check; ordinary checks are O(1). Legal-move generation, bot selection, and bot turns are O(n²), including the chain's linear `addToEnd` cost. Human input is O(n) per attempt, excluding waiting for input. The round's cost is the sum of its turns and input attempts. These retain the spec's linear draw and quadratic bot bounds.
+For complexity, n is the collection size; when multiple collections are involved, use the largest size. For console input, also include input-line length. Card/Move accessors, card validation, and turn updates are O(1). Setup and shuffling, hand display, legal-move generation, and Simple/Normal bot selection are O(n²). Drawing and fixed draw penalties are O(n), since adding to the end of a hand traverses it. Applying an ordinary play is O(n); applying a draw is O(n²) in the bot-wild case because chooseColor() uses indexed hand traversal. Master selection is O(n³): each of O(n) candidates scores the hand using repeated linear get(i) calls. Bot turns have the same selection bound; human turns are O(n²) per input attempt including hand display, excluding waiting for input. A full round sums all turns and attempts. Compared with the spec, drawing remains linear, but indexed linked-chain traversal raises setup/display from linear to quadratic and Master selection from quadratic to cubic; the +4 validity check is now constant because this prototype permits +4 regardless of matching-color cards.
 
 ## Next Steps
 

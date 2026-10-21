@@ -1,6 +1,7 @@
 package UNO;
 
 import java.util.Scanner;
+import java.util.NoSuchElementException;
 
 /** Starts and runs the UNO game. */
 public class UnoGame
@@ -76,6 +77,11 @@ public class UnoGame
                 {
                     played = player.playCard(game);
                     game.printPendingPenaltyMessage();
+                }
+                catch (NoSuchElementException exception)
+                {
+                    System.out.println("Input ended. Ending the round.");
+                    running = false;
                 }
                 catch (IllegalStateException exception)
                 {

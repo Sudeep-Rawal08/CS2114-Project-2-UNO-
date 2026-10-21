@@ -48,4 +48,64 @@ public class PlayerClassTest extends student.TestCase
         // The color prompt is interactive, so the wild path is covered manually.
         assertTrue(wildGame.isValid(wild));
     }
+    public void testInterruptedWildColorLeavesStateUnchanged()
+    {
+        GameClass game = new GameClass();
+        PlayerClass player = new PlayerClass()
+        {
+            @Override
+            protected String askForColor()
+            {
+                throw new java.util.NoSuchElementException("Input ended");
+            }
+        };
+        SpecialCards wild = new SpecialCards(null, "wild");
+        player.getCardList().addToEnd(wild);
+        Card top = game.currentCard;
+        String color = game.currentColor;
+        try
+        {
+            player.playSpecificCard(game, wild);
+            fail("Expected interrupted color input");
+        }
+        catch (java.util.NoSuchElementException expected)
+        {
+            assertTrue(player.getCardList().contains(wild));
+            assertSame(top, game.currentCard);
+            assertEquals(color, game.currentColor);
+            assertNull(wild.getCardColor());
+        }
+    }
+
+    public void testWildColorSelectionCompletesBeforePlay()
+    {
+        GameClass game = new GameClass();
+        PlayerClass player = new PlayerClass()
+        {
+            @Override
+            protected String askForColor()
+            {
+                return "Blue";
+            }
+        };
+        Card wild = new SpecialCards(null, "wild");
+        player.getCardList().addToEnd(wild);
+        assertTrue(player.playSpecificCard(game, wild));
+        assertSame(wild, game.currentCard);
+        assertEquals("Blue", game.currentColor);
+        assertTrue(player.getCardList().isEmpty());
+        assertEquals("Blue", player.chooseColor());
+        assertFalse(player.isBot());
+        assertEquals("You", player.getTitle());
+        try
+        {
+            player.playCard(null);
+            fail("Expected invalid game");
+        }
+        catch (IllegalArgumentException expected)
+        {
+            assertTrue(player.getCardList().isEmpty());
+        }
+    }
+
 }

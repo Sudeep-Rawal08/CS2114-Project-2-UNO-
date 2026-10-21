@@ -125,16 +125,16 @@ public class PlayerClass
             System.out.println("You cannot play that card.");
             return false;
         }
+        String chosenColor = null;
+        if (card.isWildCard())
+        {
+            chosenColor = askForColor();
+        }
         cardHand.remove(card);
         game.currentCard = card;
-        String chosenColor = null;
         if (card.isSpecialCard())
         {
-            if (card.isWildCard())
-            {
-                chosenColor = askForColor();
-            }
-            else
+            if (!card.isWildCard())
             {
                 game.currentColor = card.getCardColor();
             }

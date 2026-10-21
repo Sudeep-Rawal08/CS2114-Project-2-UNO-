@@ -93,4 +93,49 @@ public class BotClassTest extends student.TestCase
         assertTrue(caughtExpected);
     }
 
+    public void testNormalPrefersPenaltyAndMasterAlsoConsidersColors()
+    {
+        for (BotDifficulty level : new BotDifficulty[] {
+            BotDifficulty.NORMAL, BotDifficulty.MASTER})
+        {
+            GameClass game = new GameClass(level);
+            BotClass bot = (BotClass)game.players[1];
+            bot.getCardList().clear();
+            game.currentCard = new NumberedCards("Red", 5);
+            game.currentColor = "Red";
+            Card penalty = new SpecialCards("Red", "+2");
+            Card blueFive = new NumberedCards("Blue", 5);
+            bot.getCardList().addToEnd(penalty);
+            bot.getCardList().addToEnd(blueFive);
+            for (int number = 6; number <= 8; number++)
+            {
+                bot.getCardList().addToEnd(new NumberedCards("Blue", number));
+            }
+            Card selected = bot.chooseMove(game).getCard();
+            assertSame(level == BotDifficulty.NORMAL ? penalty : blueFive, selected);
+            assertEquals(5, bot.getCardList().size());
+        }
+    }
+
+    public void testChooseColorUsesMajorityAndRedForEmptyHand()
+    {
+        BotClass bot = new BotClass(BotDifficulty.MASTER);
+        assertEquals("Red", bot.chooseColor());
+        bot.getCardList().addToEnd(new NumberedCards("Blue", 1));
+        bot.getCardList().addToEnd(new NumberedCards("Green", 2));
+        bot.getCardList().addToEnd(new NumberedCards("Blue", 3));
+        assertEquals("Blue", bot.chooseColor());
+        assertTrue(bot.isBot());
+        assertTrue(bot.getTitle().contains("Master"));
+        try
+        {
+            bot.chooseMove(null);
+            fail("Expected invalid game");
+        }
+        catch (IllegalArgumentException expected)
+        {
+            assertEquals(3, bot.getCardList().size());
+        }
+    }
+
 }
