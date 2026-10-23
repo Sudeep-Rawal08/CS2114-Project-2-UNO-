@@ -138,4 +138,73 @@ public class BotClassTest extends student.TestCase
         }
     }
 
+    public void testDifficultyFormattingAndEmptyColorBoundary()
+    {
+        String[] names = {"Simple", "Normal", "Master"};
+        for (int i = 0; i < names.length; i++)
+        {
+            BotDifficulty level = BotDifficulty.values()[i];
+            assertEquals(names[i], level.toString());
+            assertEquals(level, BotDifficulty.valueOf(level.name()));
+            BotClass bot = new BotClass(level);
+            assertEquals(level, bot.getDifficulty());
+            assertTrue(bot.isBot());
+            assertTrue(bot.getTitle().contains(names[i]));
+            assertEquals("Red", bot.chooseColor());
+        }
+        org.junit.Assert.assertThrows(IllegalArgumentException.class,
+            () -> BotDifficulty.valueOf("Unknown"));
+    }
+
+    public void testAllBotsPlayDrawnWildAndRejectAnEmptyDeck()
+    {
+        for (BotDifficulty level : BotDifficulty.values())
+        {
+            GameClass game = new GameClass(level);
+            game.currentTurn = 1;
+            BotClass bot = (BotClass)game.players[1];
+            bot.getCardList().clear();
+            bot.getCardList().addToEnd(new NumberedCards("Blue", 7));
+            game.currentCard = new NumberedCards("Red", 5);
+            game.currentColor = "Red";
+            game.deck.clear();
+            Card wild = new SpecialCards(null, "wild");
+            game.deck.addToEnd(wild);
+            assertTrue(bot.playCard(game));
+            assertSame(wild, game.currentCard);
+            assertEquals("Blue", game.currentColor);
+            assertEquals(1, bot.getCardList().size());
+            game.currentCard = new NumberedCards("Red", 5);
+            game.currentColor = "Red";
+            org.junit.Assert.assertThrows(IllegalStateException.class,
+                () -> bot.playCard(game));
+            assertEquals(1, bot.getCardList().size());
+        }
+    }
+
+    public void testAllSpecialTypesCanBeScoredAndPlayedAsLastCard()
+    {
+        for (BotDifficulty level : new BotDifficulty[] {
+            BotDifficulty.NORMAL, BotDifficulty.MASTER})
+        {
+            for (String type : new String[] {"skip", "reverse", "+2", "wild", "+4"})
+            {
+                GameClass game = new GameClass(level);
+                game.currentTurn = 1;
+                BotClass bot = (BotClass)game.players[1];
+                bot.getCardList().clear();
+                boolean wild = type.equals("wild") || type.equals("+4");
+                Card card = new SpecialCards(wild ? null : game.currentColor, type);
+                bot.getCardList().addToEnd(card);
+                int before = game.players[0].getCardList().size();
+                assertSame(card, bot.chooseMove(game).getCard());
+                assertTrue(bot.playCard(game));
+                assertTrue(game.isWinner(bot));
+                int penalty = type.equals("+2") ? 2 : type.equals("+4") ? 4 : 0;
+                assertEquals(before + penalty, game.players[0].getCardList().size());
+                assertSame(card, game.currentCard);
+            }
+        }
+    }
+
 }

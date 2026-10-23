@@ -219,6 +219,11 @@ public class GameClass
                 "Only wild cards choose a color.");
         }
 
+        if (card.isSpecialCard())
+        {
+            if ("+2".equals(card.getCardType())) requireCards(2);
+            else if ("+4".equals(card.getCardType())) requireCards(4);
+        }
         player.getCardList().remove(card);
         currentCard = card;
         if (card.isSpecialCard())
@@ -239,7 +244,8 @@ public class GameClass
 
     public boolean isValid(Card card)
     {
-        if (card == null || currentCard == null)
+        if (card == null || currentCard == null
+            || (!card.isNumberedCard() && !card.isSpecialCard()))
         {
             return false;
         }
@@ -305,8 +311,18 @@ public class GameClass
     }
 
 
+    void requireCards(int count)
+    {
+        if (deck.size() < count)
+        {
+            throw new IllegalStateException("Not enough cards are available to draw.");
+        }
+    }
+
+
     void drawForNextPlayer(int numberOfCards)
     {
+        requireCards(numberOfCards);
         int next =
             (currentTurn + currentDirection + players.length) % players.length;
         for (int i = 0; i < numberOfCards; i++)

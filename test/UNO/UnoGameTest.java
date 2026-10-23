@@ -74,30 +74,37 @@ public class UnoGameTest extends student.TestCase
     {
         String javaCommand = System.getProperty("java.home")
             + java.io.File.separator + "bin" + java.io.File.separator + "java";
+        java.io.File outputFile = java.io.File.createTempFile("uno-console-", ".txt");
         Process process = new ProcessBuilder(javaCommand, "-cp",
             System.getProperty("java.class.path"), "UNO.UnoGame")
-            .redirectErrorStream(true).start();
+            .redirectErrorStream(true).redirectOutput(outputFile).start();
         try
         {
             process.getOutputStream().write(input.getBytes("UTF-8"));
             process.getOutputStream().close();
             assertTrue("Game did not terminate", process.waitFor(10,
                 java.util.concurrent.TimeUnit.SECONDS));
-            java.io.ByteArrayOutputStream output = new java.io.ByteArrayOutputStream();
-            byte[] buffer = new byte[1024];
-            int count;
-            while ((count = process.getInputStream().read(buffer)) != -1)
-            {
-                output.write(buffer, 0, count);
-            }
-            String text = output.toString("UTF-8");
+            String text = new String(java.nio.file.Files.readAllBytes(
+                outputFile.toPath()), java.nio.charset.StandardCharsets.UTF_8);
             assertEquals(text, 0, process.exitValue());
             return text;
         }
         finally
         {
             process.destroyForcibly();
+            java.nio.file.Files.deleteIfExists(outputFile.toPath());
         }
+    }
+
+    public void testMainCanPlayThroughARound() throws Exception
+    {
+        assertNotNull(new UnoGame());
+        StringBuilder input = new StringBuilder("1\n");
+        for (int i = 0; i < 110; i++) input.append("D\nn\n");
+        String output = runMain(input.toString());
+        assertTrue(output.contains("Would you like to play again?"));
+        assertTrue(output.contains("Thanks for playing!"));
+        assertFalse(output.contains("Input ended. Ending the round."));
     }
 
 }

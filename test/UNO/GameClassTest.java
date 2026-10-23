@@ -250,4 +250,71 @@ public class GameClassTest extends student.TestCase
         }
     }
 
+    public void testInsufficientPenaltyRejectsBeforeAnyStateChange()
+    {
+        for (String type : new String[] {"+2", "+4"})
+        {
+            GameClass game = new GameClass();
+            PlayerClass player = game.players[0];
+            player.getCardList().clear();
+            Card penalty = new SpecialCards(type.equals("+4") ? null : game.currentColor, type);
+            player.getCardList().addToEnd(penalty);
+            game.deck.clear();
+            Card available = new NumberedCards("Blue", 1);
+            game.deck.addToEnd(available);
+            Card top = game.currentCard;
+            String color = game.currentColor;
+            int opponentSize = game.players[1].getCardList().size();
+            try
+            {
+                game.applyMove(player, Move.play(penalty, type.equals("+4") ? "Green" : null));
+                fail("Expected insufficient penalty deck");
+            }
+            catch (IllegalStateException expected)
+            {
+                assertSame(top, game.currentCard);
+                assertEquals(color, game.currentColor);
+                assertTrue(player.getCardList().contains(penalty));
+                assertEquals(opponentSize, game.players[1].getCardList().size());
+                assertEquals(1, game.deck.size());
+                assertSame(available, game.deck.get(0));
+                assertFalse(game.skipNext);
+            }
+        }
+    }
+
+    public void testBaseCardCannotBecomeALegalPlay()
+    {
+        GameClass game = new GameClass();
+        Card bare = new Card(game.currentColor);
+        assertFalse(game.isValid(bare));
+        game.players[0].getCardList().clear();
+        game.players[0].getCardList().addToEnd(bare);
+        assertEquals(1, game.getLegalMoves(game.players[0]).size());
+        assertTrue(game.getLegalMoves(game.players[0]).get(0).isDraw());
+    }
+
+    public void testHumanDrawMoveAndIllegalOwnedPlayPreserveTop()
+    {
+        GameClass game = new GameClass();
+        game.currentTurn = 0;
+        game.currentCard = new NumberedCards("Red", 5);
+        game.currentColor = "Red";
+        PlayerClass player = game.players[0];
+        player.getCardList().clear();
+        game.deck.clear();
+        Card drawn = new NumberedCards("Blue", 7);
+        game.deck.addToEnd(drawn);
+        Card top = game.currentCard;
+        assertFalse(game.applyMove(Move.draw()));
+        assertSame(top, game.currentCard);
+        assertSame(drawn, player.getCardList().get(0));
+        org.junit.Assert.assertThrows(IllegalArgumentException.class,
+            () -> game.applyMove(Move.play(drawn, null)));
+        org.junit.Assert.assertThrows(IllegalStateException.class,
+            () -> game.applyMove(Move.draw()));
+        assertSame(top, game.currentCard);
+        assertEquals(1, player.getCardList().size());
+    }
+
 }

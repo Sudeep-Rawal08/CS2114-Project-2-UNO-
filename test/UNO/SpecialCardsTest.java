@@ -185,4 +185,75 @@ public class SpecialCardsTest extends student.TestCase
     }
 
     
+    public void testDirectDrawEffectsDoNotPartiallyConsumeDeck()
+    {
+        for (String type : new String[] {"+2", "+4"})
+        {
+            GameClass game = new GameClass();
+            game.deck.clear();
+            game.deck.addToEnd(new NumberedCards("Blue", 1));
+            int before = game.players[1].getCardList().size();
+            String color = game.currentColor;
+            SpecialCards card = new SpecialCards(type.equals("+4") ? null : "Red", type);
+            try
+            {
+                if (type.equals("+4")) card.addFour(game, "Green");
+                else card.addTwo(game);
+                fail("Expected insufficient penalty deck");
+            }
+            catch (IllegalStateException expected)
+            {
+                assertEquals(1, game.deck.size());
+                assertEquals(before, game.players[1].getCardList().size());
+                assertEquals(color, game.currentColor);
+                assertFalse(game.skipNext);
+            }
+        }
+    }
+
+    public void testSpecialEffectDispatchAndNullGameRejection()
+    {
+        for (String type : new String[] {"skip", "reverse", "+2", "wild", "+4"})
+        {
+            GameClass game = new GameClass();
+            boolean wild = type.equals("wild") || type.equals("+4");
+            SpecialCards card = new SpecialCards(wild ? null : "Red", type);
+            assertTrue(card.isSpecialCard());
+            assertFalse(card.isNumberedCard());
+            assertEquals(wild, card.isWildCard());
+            assertEquals(-1, card.getCardNumber());
+            int before = game.players[1].getCardList().size();
+            card.playSpecialEffect(game, wild ? "Blue" : null);
+            int count = type.equals("+2") ? 2 : type.equals("+4") ? 4 : 0;
+            assertEquals(before + count, game.players[1].getCardList().size());
+            assertEquals(!type.equals("wild"), game.skipNext);
+            if (wild) assertEquals("Blue", game.currentColor);
+            if (type.equals("reverse")) assertEquals(-1, game.currentDirection);
+            org.junit.Assert.assertThrows(IllegalArgumentException.class,
+                () -> card.playSpecialEffect(null, wild ? "Blue" : null));
+            org.junit.Assert.assertThrows(IllegalArgumentException.class,
+                () -> card.playSpecialEffect(game, wild ? "Purple" : "Blue"));
+        }
+    }
+
+    public void testWildColorSetterBoundaryAndInvalidConstruction()
+    {
+        SpecialCards wild = new SpecialCards(null, "wild");
+        wild.setCardColor(null);
+        assertNull(wild.getCardColor());
+        for (String invalid : new String[] {"Red", "Wild", "Purple", ""})
+        {
+            org.junit.Assert.assertThrows(IllegalArgumentException.class,
+                () -> wild.setCardColor(invalid));
+            assertNull(wild.getCardColor());
+        }
+        org.junit.Assert.assertThrows(IllegalArgumentException.class,
+            () -> new SpecialCards("Red", null));
+        org.junit.Assert.assertThrows(IllegalArgumentException.class,
+            () -> new SpecialCards(null, "skip"));
+        GameClass game = new GameClass();
+        org.junit.Assert.assertThrows(IllegalArgumentException.class,
+            () -> wild.addFour(null, "Red"));
+    }
+
 }

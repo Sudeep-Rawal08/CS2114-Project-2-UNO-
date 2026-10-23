@@ -7,9 +7,21 @@ public class PlayerClass
 {
     protected LinkedChain<Card> cardHand;
     protected static final Scanner INPUT = new Scanner(System.in);
+    private final Scanner input;
 
     public PlayerClass()
     {
+        this(INPUT);
+    }
+
+
+    PlayerClass(Scanner input)
+    {
+        if (input == null)
+        {
+            throw new IllegalArgumentException("Input is required.");
+        }
+        this.input = input;
         cardHand = new LinkedChain<Card>();
     }
 
@@ -58,7 +70,7 @@ public class PlayerClass
                 game.players[1].getTitle() + " has "
                     + game.players[1].getCardList().size() + " cards.");
             System.out.print("Enter a card number to play, or D to draw: ");
-            String input = INPUT.nextLine().trim();
+            String input = this.input.nextLine().trim();
             if (input.isEmpty())
             {
                 System.out.println("Invalid input.");
@@ -79,7 +91,7 @@ public class PlayerClass
                             && !answer.equalsIgnoreCase("no"))
                         {
                             System.out.print("Play this card? (Y/N): ");
-                            answer = INPUT.nextLine().trim();
+                            answer = this.input.nextLine().trim();
                             if (!answer.equalsIgnoreCase("y")
                                 && !answer.equalsIgnoreCase("n")
                                 && !answer.equalsIgnoreCase("yes")
@@ -140,20 +152,7 @@ public class PlayerClass
         {
             chosenColor = askForColor();
         }
-        cardHand.remove(card);
-        game.currentCard = card;
-        if (card.isSpecialCard())
-        {
-            if (!card.isWildCard())
-            {
-                game.currentColor = card.getCardColor();
-            }
-            card.playSpecialEffect(game, chosenColor);
-        }
-        else
-        {
-            game.currentColor = card.getCardColor();
-        }
+        game.applyMove(this, Move.play(card, chosenColor));
         System.out.println("You played: " + card);
         if (chosenColor != null)
         {
@@ -168,7 +167,7 @@ public class PlayerClass
         while (true)
         {
             System.out.print("Choose a color (Red, Blue, Green, Yellow): ");
-            String color = INPUT.nextLine().trim();
+            String color = this.input.nextLine().trim();
             if (color.equalsIgnoreCase("red"))
                 return "Red";
             if (color.equalsIgnoreCase("blue"))
