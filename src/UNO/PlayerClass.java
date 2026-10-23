@@ -61,14 +61,11 @@ public class PlayerClass
         }
         while (true)
         {
-            System.out.println("Your hand:");
+            game.printTable();
+            System.out.println(game.players[1].getTitle() + " has "
+                + game.players[1].getCardList().size() + " cards.");
+            System.out.println("YOUR HAND (" + cardHand.size() + " cards)");
             game.printPlayerDeck(this);
-            System.out.println(
-                "Current card: " + game.currentCard + " | Required color: "
-                    + game.currentColor);
-            System.out.println(
-                game.players[1].getTitle() + " has "
-                    + game.players[1].getCardList().size() + " cards.");
             System.out.print("Enter a card number to play, or D to draw: ");
             String input = this.input.nextLine().trim();
             if (input.isEmpty())

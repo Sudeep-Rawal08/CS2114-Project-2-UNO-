@@ -107,4 +107,12 @@ public class UnoGameTest extends student.TestCase
         assertFalse(output.contains("Input ended. Ending the round."));
     }
 
+    public void testWelcomeShowsLargeAsciiUnoTitle() throws Exception
+    {
+        String output = runMain("");
+        assertTrue(output.contains("UU     UU  NNN    NN   OOOOOOO"));
+        assertTrue(output.contains("UUUUUUU   NN    NNN   OOOOOOO"));
+        assertTrue(output.contains("Welcome to UNO!"));
+    }
+
 }

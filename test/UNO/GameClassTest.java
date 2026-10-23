@@ -317,4 +317,50 @@ public class GameClassTest extends student.TestCase
         assertEquals(1, player.getCardList().size());
     }
 
+    public void testHandUsesAsciiCardsAndWrapsAfterFour()
+    {
+        GameClass game = new GameClass();
+        PlayerClass player = game.players[0];
+        player.getCardList().clear();
+        player.getCardList().addToEnd(new NumberedCards("Red", 7));
+        player.getCardList().addToEnd(new SpecialCards("Blue", "+2"));
+        player.getCardList().addToEnd(new SpecialCards(null, "wild"));
+        player.getCardList().addToEnd(new SpecialCards("Yellow", "reverse"));
+        player.getCardList().addToEnd(new SpecialCards(null, "+4"));
+        java.io.PrintStream original = System.out;
+        java.io.ByteArrayOutputStream output = new java.io.ByteArrayOutputStream();
+        try
+        {
+            System.setOut(new java.io.PrintStream(output));
+            game.printPlayerDeck(player);
+        }
+        finally
+        {
+            System.setOut(original);
+        }
+        String text = output.toString();
+        assertTrue(text.contains("+---------------+"));
+        assertTrue(text.contains("[1]"));
+        assertTrue(text.contains("[5]"));
+        assertTrue(text.contains("RED"));
+        assertTrue(text.contains("BLUE"));
+        assertTrue(text.contains("WILD"));
+        assertTrue(text.contains("REVERSE"));
+        assertTrue(text.contains("+4"));
+        int rows = 0;
+        for (String line : text.split("\r?\n"))
+        {
+            if (line.contains("[1]"))
+            {
+                assertTrue(line.contains("[4]"));
+                assertFalse(line.contains("[5]"));
+            }
+            if (line.contains("+---------------+")) rows++;
+            assertTrue(line.length() <= 74);
+        }
+        assertEquals(4, rows);
+        assertEquals(5, player.getCardList().size());
+        assertEquals(7, player.getCardList().get(0).getCardNumber());
+    }
+
 }

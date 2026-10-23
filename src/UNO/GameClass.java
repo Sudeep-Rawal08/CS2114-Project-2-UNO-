@@ -282,9 +282,67 @@ public class GameClass
             System.out.println("(no cards)");
             return;
         }
-        for (int i = 0; i < hand.size(); i++)
+        for (int start = 0; start < hand.size(); start += 4)
         {
-            System.out.println((i + 1) + ". " + hand.get(i));
+            Card[] row = new Card[Math.min(4, hand.size() - start)];
+            for (int i = 0; i < row.length; i++)
+            {
+                row[i] = hand.get(start + i);
+            }
+            printCardRow(row, start + 1);
+            System.out.println();
+        }
+    }
+
+
+    void printTable()
+    {
+        System.out.println("------------------------------ TABLE ------------------------------");
+        printCardRow(new Card[] {currentCard}, 0);
+        System.out.println("Active color: " + currentColor
+            + "    |    Draw pile: " + deck.size() + " cards");
+        System.out.println();
+    }
+
+
+    private static void printCardRow(Card[] cards, int firstIndex)
+    {
+        String[][] pictures = new String[cards.length][];
+        for (int i = 0; i < cards.length; i++)
+        {
+            Card card = cards[i];
+            String color = card.isWildCard() ? "WILD"
+                : card.getCardColor().toUpperCase(java.util.Locale.ROOT);
+            String value = card.isNumberedCard()
+                ? String.valueOf(card.getCardNumber())
+                : card.isSpecialCard()
+                    ? card.getCardType().toUpperCase(java.util.Locale.ROOT) : "CARD";
+            int left = (15 - value.length()) / 2;
+            String spaces = "               ";
+            String middle = "|" + spaces.substring(0, left) + value
+                + spaces.substring(0, 15 - value.length() - left) + "|";
+            String label = firstIndex == 0 ? "       TOP"
+                : "      [" + (firstIndex + i) + "]";
+            pictures[i] = new String[] {
+                String.format("%-17s", label),
+                "+---------------+",
+                String.format("|%-15s|", " " + color),
+                "|               |",
+                middle,
+                "|               |",
+                String.format("|%15s|", color + " "),
+                "+---------------+"
+            };
+        }
+        for (int line = 0; line < pictures[0].length; line++)
+        {
+            StringBuilder row = new StringBuilder();
+            for (int i = 0; i < pictures.length; i++)
+            {
+                if (i > 0) row.append("  ");
+                row.append(pictures[i][line]);
+            }
+            System.out.println(row);
         }
     }
 

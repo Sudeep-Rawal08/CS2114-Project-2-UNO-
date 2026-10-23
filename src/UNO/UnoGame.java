@@ -10,19 +10,22 @@ public class UnoGame
     {
         Scanner input = PlayerClass.INPUT;
         boolean playAgain = true;
+        System.out.println();
+        System.out.println("UU     UU  NNN    NN   OOOOOOO");
+        System.out.println("UU     UU  NNNN   NN  OO     OO");
+        System.out.println("UU     UU  NN NN  NN  OO     OO");
+        System.out.println("UU     UU  NN  NN NN  OO     OO");
+        System.out.println("UU     UU  NN   NNNN  OO     OO");
+        System.out.println(" UU   UU   NN    NNN  OO     OO");
+        System.out.println(" UUUUUUU   NN    NNN   OOOOOOO");
+        System.out.println();
         System.out.println("Welcome to UNO!");
-        System.out.println("How to enter your moves:");
-        System.out.println(
-            "- Your hand is shown as a numbered list. Type the number beside the card you want to play.");
-        System.out.println(
-            "  Example: if the list says '3. Yellow 5', type 3 to play Yellow 5.");
-        System.out.println("- Type D to draw a card.");
-        System.out.println(
-            "- If the drawn card is playable, type Y to play it or N to keep it and end your turn.");
-        System.out.println(
-            "- For Wild and +4 cards, type a color name: Red, Blue, Green, or Yellow.");
-        System.out.println(
-            "- Card names look like 'Yellow 5', 'Blue +2', 'Red skip', 'Wild', or '+4'.");
+        System.out.println("HOW TO PLAY");
+        System.out.println("  [1], [2], ...  Enter the number above a card to play it.");
+        System.out.println("  D              Draw a card.");
+        System.out.println("  Y / N          Play a legal draw, or keep it and end your turn.");
+        System.out.println("  Wild / +4      Choose Red, Blue, Green, or Yellow.");
+        System.out.println();
 
         while (playAgain)
         {
