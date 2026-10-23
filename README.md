@@ -58,30 +58,30 @@ The smarter-bot goal is implemented as the revised Normal/Master heuristics; the
 
 ## Attribution
 
-Complete Work performed with each member's actual contribution before submission.
+## 👥 Contributions & Work Performed
 
 | Class or test file | Contributor | Work performed |
 |---|---|---|
-| `src/UNO/LinkedChain.java` | CS 2114 Staff (provided) | |
-| `src/UNO/Card.java` | Edward Wei, Greek Yuan | |
-| `src/UNO/NumberedCards.java` | Sudeep Rawal, Greek Yuan | |
-| `src/UNO/SpecialCards.java` | Sudeep Rawal, Edward Wei, Greek Yuan | |
-| `src/UNO/Move.java` | Sudeep Rawal, Edward Wei, Greek Yuan | |
-| `src/UNO/BotDifficulty.java` | Edward Wei, Greek Yuan | |
-| `src/UNO/GameClass.java` | Sudeep Rawal, Edward Wei, Greek Yuan | |
-| `src/UNO/PlayerClass.java` | Sudeep Rawal, Edward Wei, Greek Yuan | |
-| `src/UNO/BotClass.java` | Sudeep Rawal, Edward Wei, Greek Yuan | |
-| `src/UNO/UnoGame.java` | Sudeep Rawal, Edward Wei | |
-| `test/UNO/CardTest.java` | Sudeep Rawal, Greek Yuan | |
-| `test/UNO/MoveTest.java` | Sudeep Rawal, Edward Wei, Greek Yuan | |
-| `test/UNO/LinkedChainReuseTest.java` | Greek Yuan, Edward Wei | |
-| `test/UNO/GameClassTest.java` | Sudeep Rawal | |
-| `test/UNO/SpecialCardsTest.java` | Sudeep Rawal, Edward Wei | |
-| `test/UNO/PlayerClassTest.java` | Edward Wei, Greek Yuan | |
-| `test/UNO/BotClassTest.java` | Sudeep Rawal, Greek Yuan | |
-| `test/UNO/UnoGameTest.java` | Sudeep Rawal, Edward Wei | |
-| `src/UNO/HouseRules.java` | Sudeep Rawal | |
-| `test/UNO/HouseRulesTest.java` | Sudeep Rawal | |
+| `src/UNO/LinkedChain.java` | CS 2114 Staff (provided) | Provided baseline custom linked list data structure for card management. |
+| `src/UNO/Card.java` | Edward Wei, Greek Yuan | Implemented the base abstract Card class, common attributes, and interface methods. |
+| `src/UNO/NumberedCards.java` | Sudeep Rawal, Greek Yuan | Implemented standard colored numbered cards and value comparisons. |
+| `src/UNO/SpecialCards.java` | Sudeep Rawal, Edward Wei, Greek Yuan | Implemented special action cards (`+2`, Skip, Reverse, Wild, `+4`) and their unique effects. |
+| `src/UNO/Move.java` | Sudeep Rawal, Edward Wei, Greek Yuan | Implemented move representation for card plays, color choices, and draw actions. |
+| `src/UNO/BotDifficulty.java` | Edward Wei, Greek Yuan | Defined computer opponent difficulty tiers (Simple, Normal, Master). |
+| `src/UNO/GameClass.java` | Sudeep Rawal, Edward Wei, Greek Yuan | Coordinated game rules, turns, deck shuffling, and integrated house rules (stacking penalties, 7-swap hand exchanges, and draw-till-match). |
+| `src/UNO/PlayerClass.java` | Sudeep Rawal, Edward Wei, Greek Yuan | Managed human player hand state, card displays, and interactive input prompts. |
+| `src/UNO/BotClass.java` | Sudeep Rawal, Edward Wei, Greek Yuan | Implemented AI decision-making logic and difficulty-based strategic move evaluation. |
+| `src/UNO/UnoGame.java` | Sudeep Rawal, Edward Wei | Managed game loop execution, round flow, bot difficulty selection, and house rule preference prompting. |
+| `test/UNO/CardTest.java` | Sudeep Rawal, Greek Yuan | Unit tested card properties, matching logic, and validation rules. |
+| `test/UNO/MoveTest.java` | Sudeep Rawal, Edward Wei, Greek Yuan | Unit tested move creation and state getters. |
+| `test/UNO/LinkedChainReuseTest.java` | Greek Yuan, Edward Wei | Tested LinkedChain structural operations and data reusability. |
+| `test/UNO/GameClassTest.java` | Sudeep Rawal | Unit tested game orchestration, turn management, and win conditions. |
+| `test/UNO/SpecialCardsTest.java` | Sudeep Rawal, Edward Wei | Unit tested special card effects, scoring, and application. |
+| `test/UNO/PlayerClassTest.java` | Edward Wei, Greek Yuan | Unit tested player hand handling and input choices. |
+| `test/UNO/BotClassTest.java` | Sudeep Rawal, Greek Yuan | Unit tested bot turn decisions, move selection, and difficulty levels. |
+| `test/UNO/UnoGameTest.java` | Sudeep Rawal, Edward Wei | Unit tested game startup, round transitions, and termination handling. |
+| `src/UNO/HouseRules.java` | Sudeep Rawal | Implemented optional house rule configurations (`stackingPlus`, `sevenSwap`, `drawTillMatch`) and toggle methods. |
+| `test/UNO/HouseRulesTest.java` | Sudeep Rawal | Unit tested house rule defaults, toggles, getter/setter safety, and rule-driven game mechanics (stacking restrictions, 7-swaps, and draw-till-match behavior). |
 
 ## GenAI Use
 
