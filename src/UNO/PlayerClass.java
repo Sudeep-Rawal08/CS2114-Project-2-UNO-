@@ -13,10 +13,12 @@ public class PlayerClass
         cardHand = new LinkedChain<Card>();
     }
 
+
     public LinkedChain<Card> getCardList()
     {
         return cardHand;
     }
+
 
     /** Returns whether this player is controlled by the computer. */
     public boolean isBot()
@@ -24,17 +26,20 @@ public class PlayerClass
         return false;
     }
 
+
     /** Returns the display title for this player. */
     public String getTitle()
     {
         return "You";
     }
 
+
     /** Chooses a color for a wild card; bots override this method. */
     public String chooseColor()
     {
         return askForColor();
     }
+
 
     public boolean playCard(GameClass game)
     {
@@ -46,10 +51,12 @@ public class PlayerClass
         {
             System.out.println("Your hand:");
             game.printPlayerDeck(this);
-            System.out.println("Current card: " + game.currentCard
-                + " | Required color: " + game.currentColor);
-            System.out.println(game.players[1].getTitle() + " has "
-                + game.players[1].getCardList().size() + " cards.");
+            System.out.println(
+                "Current card: " + game.currentCard + " | Required color: "
+                    + game.currentColor);
+            System.out.println(
+                game.players[1].getTitle() + " has "
+                    + game.players[1].getCardList().size() + " cards.");
             System.out.print("Enter a card number to play, or D to draw: ");
             String input = INPUT.nextLine().trim();
             if (input.isEmpty())
@@ -78,7 +85,8 @@ public class PlayerClass
                                 && !answer.equalsIgnoreCase("yes")
                                 && !answer.equalsIgnoreCase("no"))
                             {
-                                System.out.println("Invalid input. Please enter Y or N.");
+                                System.out.println(
+                                    "Invalid input. Please enter Y or N.");
                             }
                         }
                         if (answer.equalsIgnoreCase("y")
@@ -91,7 +99,8 @@ public class PlayerClass
                 }
                 catch (IllegalStateException exception)
                 {
-                    System.out.println("No cards are available. The round ends.");
+                    System.out
+                        .println("No cards are available. The round ends.");
                     return false;
                 }
             }
@@ -117,6 +126,7 @@ public class PlayerClass
             }
         }
     }
+
 
     protected boolean playSpecificCard(GameClass game, Card card)
     {
@@ -152,17 +162,23 @@ public class PlayerClass
         return true;
     }
 
+
     protected String askForColor()
     {
         while (true)
         {
             System.out.print("Choose a color (Red, Blue, Green, Yellow): ");
             String color = INPUT.nextLine().trim();
-            if (color.equalsIgnoreCase("red")) return "Red";
-            if (color.equalsIgnoreCase("blue")) return "Blue";
-            if (color.equalsIgnoreCase("green")) return "Green";
-            if (color.equalsIgnoreCase("yellow")) return "Yellow";
-            System.out.println("Invalid color. Choose Red, Blue, Green, or Yellow.");
+            if (color.equalsIgnoreCase("red"))
+                return "Red";
+            if (color.equalsIgnoreCase("blue"))
+                return "Blue";
+            if (color.equalsIgnoreCase("green"))
+                return "Green";
+            if (color.equalsIgnoreCase("yellow"))
+                return "Yellow";
+            System.out
+                .println("Invalid color. Choose Red, Blue, Green, or Yellow.");
         }
     }
 }

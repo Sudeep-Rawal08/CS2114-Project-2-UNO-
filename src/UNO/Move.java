@@ -12,6 +12,7 @@ public final class Move
         chosenColor = color;
     }
 
+
     /** Creates a play. Wild cards require a regular chosen color. */
     public static Move play(Card card, String chosenColor)
     {
@@ -32,11 +33,13 @@ public final class Move
         return new Move(card, chosenColor);
     }
 
+
     /** Creates a draw move. */
     public static Move draw()
     {
         return new Move(null, null);
     }
+
 
     /** Returns true when this move draws rather than plays. */
     public boolean isDraw()
@@ -44,11 +47,13 @@ public final class Move
         return card == null;
     }
 
+
     /** Returns the played card, or null for a draw. */
     public Card getCard()
     {
         return card;
     }
+
 
     /** Returns the chosen color for a wild play, otherwise null. */
     public String getChosenColor()

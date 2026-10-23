@@ -20,6 +20,7 @@ public class GameClass
         this(BotDifficulty.SIMPLE);
     }
 
+
     public GameClass(BotDifficulty difficulty)
     {
         if (difficulty == null)
@@ -36,7 +37,7 @@ public class GameClass
         players[0] = new PlayerClass();
         players[1] = new BotClass(difficulty);
 
-        String[] colors = {"Red", "Blue", "Green", "Yellow"};
+        String[] colors = { "Red", "Blue", "Green", "Yellow" };
         for (int i = 0; i < colors.length; i++)
         {
             String color = colors[i];
@@ -68,6 +69,7 @@ public class GameClass
         setStartingCard();
     }
 
+
     private void shuffleDeck()
     {
         LinkedChain<Card> shuffled = new LinkedChain<Card>();
@@ -80,6 +82,7 @@ public class GameClass
         }
         deck = shuffled;
     }
+
 
     private void setStartingCard()
     {
@@ -96,8 +99,10 @@ public class GameClass
             }
             index++;
         }
-        throw new IllegalStateException("No numbered starting card is available.");
+        throw new IllegalStateException(
+            "No numbered starting card is available.");
     }
+
 
     public Card drawCard(PlayerClass player)
     {
@@ -123,6 +128,7 @@ public class GameClass
         return getLegalMoves(players[1]);
     }
 
+
     /** Returns legal play moves and one draw move for the selected player. */
     public LinkedChain<Move> getLegalMoves(PlayerClass player)
     {
@@ -138,7 +144,7 @@ public class GameClass
             {
                 if (card.isWildCard())
                 {
-                    String[] colors = {"Red", "Blue", "Green", "Yellow"};
+                    String[] colors = { "Red", "Blue", "Green", "Yellow" };
                     for (int j = 0; j < colors.length; j++)
                     {
                         moves.addToEnd(Move.play(card, colors[j]));
@@ -154,11 +160,13 @@ public class GameClass
         return moves;
     }
 
+
     /** Applies a move for the player whose turn is active. */
     public boolean applyMove(Move move)
     {
         return applyMove(players[currentTurn], move);
     }
+
 
     /** Applies a move chosen by a player. */
     public boolean applyMove(PlayerClass player, Move move)
@@ -181,12 +189,13 @@ public class GameClass
                 {
                     color = player.chooseColor();
                 }
-                System.out.println("Bot (" + player.getTitle()
-                    + ") plays: " + drawn);
+                System.out
+                    .println("Bot (" + player.getTitle() + ") plays: " + drawn);
                 if (color != null)
                 {
-                    System.out.println("Bot (" + player.getTitle()
-                        + ") chooses " + color + ".");
+                    System.out.println(
+                        "Bot (" + player.getTitle() + ") chooses " + color
+                            + ".");
                 }
                 return applyMove(player, Move.play(drawn, color));
             }
@@ -196,15 +205,18 @@ public class GameClass
         Card card = move.getCard();
         if (!player.getCardList().contains(card) || !isValid(card))
         {
-            throw new IllegalArgumentException("The selected card cannot be played.");
+            throw new IllegalArgumentException(
+                "The selected card cannot be played.");
         }
         if (card.isWildCard() && !Card.isRegularColor(move.getChosenColor()))
         {
-            throw new IllegalArgumentException("A wild card needs a chosen color.");
+            throw new IllegalArgumentException(
+                "A wild card needs a chosen color.");
         }
         if (!card.isWildCard() && move.getChosenColor() != null)
         {
-            throw new IllegalArgumentException("Only wild cards choose a color.");
+            throw new IllegalArgumentException(
+                "Only wild cards choose a color.");
         }
 
         player.getCardList().remove(card);
@@ -223,6 +235,7 @@ public class GameClass
         }
         return true;
     }
+
 
     public boolean isValid(Card card)
     {
@@ -250,6 +263,7 @@ public class GameClass
         return false;
     }
 
+
     public void printPlayerDeck(PlayerClass player)
     {
         if (player == null)
@@ -268,10 +282,12 @@ public class GameClass
         }
     }
 
+
     public boolean isWinner(PlayerClass player)
     {
         return player != null && player.getCardList().isEmpty();
     }
+
 
     void reverseDirection()
     {
@@ -282,24 +298,26 @@ public class GameClass
         }
     }
 
+
     void skipNextPlayer()
     {
         skipNext = true;
     }
 
+
     void drawForNextPlayer(int numberOfCards)
     {
-        int next = (currentTurn + currentDirection + players.length)
-            % players.length;
+        int next =
+            (currentTurn + currentDirection + players.length) % players.length;
         for (int i = 0; i < numberOfCards; i++)
         {
             drawCard(players[next]);
         }
         if (players[next].isBot())
         {
-            pendingPenaltyMessage = players[next].getTitle()
-                + " was forced to draw " + numberOfCards
-                + " cards and its turn was skipped.";
+            pendingPenaltyMessage =
+                players[next].getTitle() + " was forced to draw "
+                    + numberOfCards + " cards and its turn was skipped.";
         }
         else
         {
@@ -309,6 +327,7 @@ public class GameClass
         skipNext = true;
     }
 
+
     void printPendingPenaltyMessage()
     {
         if (pendingPenaltyMessage != null)
@@ -317,6 +336,7 @@ public class GameClass
             pendingPenaltyMessage = null;
         }
     }
+
 
     void setCurrentColor(String color)
     {

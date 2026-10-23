@@ -1,7 +1,8 @@
 package UNO;
 
 /** A bot that chooses moves according to its difficulty setting. */
-public class BotClass extends PlayerClass
+public class BotClass
+    extends PlayerClass
 {
     private final BotDifficulty difficulty;
 
@@ -9,6 +10,7 @@ public class BotClass extends PlayerClass
     {
         this(BotDifficulty.SIMPLE);
     }
+
 
     public BotClass(BotDifficulty selectedDifficulty)
     {
@@ -19,11 +21,13 @@ public class BotClass extends PlayerClass
         difficulty = selectedDifficulty;
     }
 
+
     @Override
     public boolean isBot()
     {
         return true;
     }
+
 
     @Override
     public String getTitle()
@@ -31,10 +35,12 @@ public class BotClass extends PlayerClass
         return "Bot (" + difficulty + ")";
     }
 
+
     public BotDifficulty getDifficulty()
     {
         return difficulty;
     }
+
 
     /** Chooses one move from the legal moves offered by the game. */
     public Move chooseMove(GameClass game)
@@ -70,6 +76,7 @@ public class BotClass extends PlayerClass
         return chosen;
     }
 
+
     @Override
     public boolean playCard(GameClass game)
     {
@@ -86,10 +93,12 @@ public class BotClass extends PlayerClass
         System.out.println(getTitle() + " plays: " + move.getCard());
         if (move.getChosenColor() != null)
         {
-            System.out.println(getTitle() + " chooses " + move.getChosenColor() + ".");
+            System.out.println(
+                getTitle() + " chooses " + move.getChosenColor() + ".");
         }
         return game.applyMove(this, move);
     }
+
 
     private int scoreMove(Move move)
     {
@@ -98,11 +107,16 @@ public class BotClass extends PlayerClass
         if (card.isSpecialCard())
         {
             String type = card.getCardType();
-            if (type.equals("+2")) score += 4;
-            if (type.equals("skip")) score += 3;
-            if (type.equals("reverse")) score += 2;
-            if (type.equals("+4")) score += 5;
-            if (type.equals("wild")) score += 3;
+            if (type.equals("+2"))
+                score += 4;
+            if (type.equals("skip"))
+                score += 3;
+            if (type.equals("reverse"))
+                score += 2;
+            if (type.equals("+4"))
+                score += 5;
+            if (type.equals("wild"))
+                score += 3;
         }
         if (difficulty == BotDifficulty.MASTER)
         {
@@ -127,11 +141,12 @@ public class BotClass extends PlayerClass
         return score;
     }
 
+
     /** Selects the color most common in the bot's hand. */
     @Override
     public String chooseColor()
     {
-        String[] colors = {"Red", "Blue", "Green", "Yellow"};
+        String[] colors = { "Red", "Blue", "Green", "Yellow" };
         int[] counts = new int[colors.length];
         for (int i = 0; i < cardHand.size(); i++)
         {

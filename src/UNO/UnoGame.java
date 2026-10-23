@@ -12,12 +12,17 @@ public class UnoGame
         boolean playAgain = true;
         System.out.println("Welcome to UNO!");
         System.out.println("How to enter your moves:");
-        System.out.println("- Your hand is shown as a numbered list. Type the number beside the card you want to play.");
-        System.out.println("  Example: if the list says '3. Yellow 5', type 3 to play Yellow 5.");
+        System.out.println(
+            "- Your hand is shown as a numbered list. Type the number beside the card you want to play.");
+        System.out.println(
+            "  Example: if the list says '3. Yellow 5', type 3 to play Yellow 5.");
         System.out.println("- Type D to draw a card.");
-        System.out.println("- If the drawn card is playable, type Y to play it or N to keep it and end your turn.");
-        System.out.println("- For Wild and +4 cards, type a color name: Red, Blue, Green, or Yellow.");
-        System.out.println("- Card names look like 'Yellow 5', 'Blue +2', 'Red skip', 'Wild', or '+4'.");
+        System.out.println(
+            "- If the drawn card is playable, type Y to play it or N to keep it and end your turn.");
+        System.out.println(
+            "- For Wild and +4 cards, type a color name: Red, Blue, Green, or Yellow.");
+        System.out.println(
+            "- Card names look like 'Yellow 5', 'Blue +2', 'Red skip', 'Wild', or '+4'.");
 
         while (playAgain)
         {
@@ -40,11 +45,13 @@ public class UnoGame
                 {
                     difficulty = BotDifficulty.SIMPLE;
                 }
-                else if (choice.equals("2") || choice.equalsIgnoreCase("normal"))
+                else if (choice.equals("2")
+                    || choice.equalsIgnoreCase("normal"))
                 {
                     difficulty = BotDifficulty.NORMAL;
                 }
-                else if (choice.equals("3") || choice.equalsIgnoreCase("master"))
+                else if (choice.equals("3")
+                    || choice.equalsIgnoreCase("master"))
                 {
                     difficulty = BotDifficulty.MASTER;
                 }
@@ -55,7 +62,8 @@ public class UnoGame
                 }
                 else
                 {
-                    System.out.println("Invalid choice. Please choose Simple, Normal, or Master.");
+                    System.out.println(
+                        "Invalid choice. Please choose Simple, Normal, or Master.");
                 }
             }
 
@@ -70,8 +78,10 @@ public class UnoGame
             {
                 PlayerClass player = game.players[game.currentTurn];
                 System.out.println();
-                System.out.println(player.isBot()
-                    ? player.getTitle() + "'s turn." : "Your turn.");
+                System.out.println(
+                    player.isBot()
+                        ? player.getTitle() + "'s turn."
+                        : "Your turn.");
                 boolean played = false;
                 try
                 {
@@ -85,25 +95,30 @@ public class UnoGame
                 }
                 catch (IllegalStateException exception)
                 {
-                    System.out.println("The round ends: " + exception.getMessage());
+                    System.out
+                        .println("The round ends: " + exception.getMessage());
                     running = false;
                 }
                 if (game.isWinner(player))
                 {
-                    System.out.println(player.isBot()
-                        ? player.getTitle() + " wins! You lose." : "You win!");
+                    System.out.println(
+                        player.isBot()
+                            ? player.getTitle() + " wins! You lose."
+                            : "You win!");
                     winnerFound = true;
                     running = false;
                 }
                 if (!played)
                 {
-                    System.out.println(player.isBot()
-                        ? player.getTitle() + " does not play a card."
-                        : "No card played.");
+                    System.out.println(
+                        player.isBot()
+                            ? player.getTitle() + " does not play a card."
+                            : "No card played.");
                 }
                 if (game.deck.isEmpty() && running)
                 {
-                    System.out.println("The draw pile is empty. The round ends.");
+                    System.out
+                        .println("The draw pile is empty. The round ends.");
                     running = false;
                 }
                 if (running)
@@ -114,13 +129,15 @@ public class UnoGame
                         boolean penaltyCard = game.currentCard.isSpecialCard()
                             && (game.currentCard.getCardType().equals("+2")
                                 || game.currentCard.getCardType().equals("+4"));
-                        game.currentTurn = (game.currentTurn + 2 * game.currentDirection
-                            + game.players.length) % game.players.length;
+                        game.currentTurn =
+                            (game.currentTurn + 2 * game.currentDirection
+                                + game.players.length) % game.players.length;
                     }
                     else
                     {
-                        game.currentTurn = (game.currentTurn + game.currentDirection
-                            + game.players.length) % game.players.length;
+                        game.currentTurn =
+                            (game.currentTurn + game.currentDirection
+                                + game.players.length) % game.players.length;
                     }
                 }
                 System.out.println("----------------------------------------");
@@ -153,8 +170,8 @@ public class UnoGame
                     System.out.println("Invalid input. Please enter Y or N.");
                 }
             }
-            playAgain = answer.equalsIgnoreCase("y")
-                || answer.equalsIgnoreCase("yes");
+            playAgain =
+                answer.equalsIgnoreCase("y") || answer.equalsIgnoreCase("yes");
         }
         System.out.println("Thanks for playing!");
     }
