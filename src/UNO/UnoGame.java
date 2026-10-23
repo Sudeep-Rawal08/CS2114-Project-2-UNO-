@@ -29,6 +29,32 @@ public class UnoGame
 
         while (playAgain)
         {
+            // Prompt for House Rules
+            HouseRules rules = new HouseRules();
+            System.out.println();
+            System.out.println("--- Configure House Rules ---");
+            
+            System.out.print("Enable Stacking (+2 / +4 can be stacked)? (y/n): ");
+            String ans = input.nextLine().trim();
+            if (ans.equalsIgnoreCase("y") || ans.equalsIgnoreCase("yes"))
+            {
+                rules.toggleStacking();
+            }
+
+            System.out.print("Enable 7-Swap (playing a 7 swaps hands)? (y/n): ");
+            ans = input.nextLine().trim();
+            if (ans.equalsIgnoreCase("y") || ans.equalsIgnoreCase("yes"))
+            {
+                rules.toggleSevenSwap();
+            }
+
+            System.out.print("Enable Draw-Till-Match (draw until a playable card is found)? (y/n): ");
+            ans = input.nextLine().trim();
+            if (ans.equalsIgnoreCase("y") || ans.equalsIgnoreCase("yes"))
+            {
+                rules.toggleDrawTillMatch();
+            }
+
             System.out.println();
             System.out.println("Choose the bot difficulty:");
             System.out.println("1. Simple");
@@ -70,7 +96,7 @@ public class UnoGame
                 }
             }
 
-            GameClass game = new GameClass(difficulty);
+            GameClass game = new GameClass(difficulty, rules);
             System.out.println("Bot difficulty: " + difficulty);
             System.out.println("You are Player 1. The bot is Player 2.");
             System.out.println("Starting card: " + game.currentCard);
