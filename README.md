@@ -22,7 +22,7 @@ UnoGame owns the console session, difficulty selection, round loop, and replay. 
 
 Each hand and the deck use LinkedChain<Card>, holding NumberedCards and SpecialCards. GameClass builds LinkedChain<Move> candidates for bot selection. Move describes a play and any chosen wild color, or a draw, without executing it. All collections use the same provided generic class through its public API.
 
-The revised system diagram is prepared locally for the final presentation and still needs publishing with the final repository.
+[System diagram (editable .drawio)](UNO_System_Diagram.drawio). Open this file in [diagrams.net](https://app.diagrams.net/) using File > Open From > Device.
 
 ## Reflection
 
@@ -53,7 +53,7 @@ The JUnit suite covers each declared public application method with normal behav
 
 1. Manually play all three levels and check special effects and input recovery. Owner: Greek Yuan.
 2. Add regression tests for any further playtesting defects before fixing them. Owner: Sudeep Rawal.
-3. Publish the revised system diagram, finish attribution details, and rehearse the final demonstration. Owner: Edward Wei.
+3. Finish attribution details and rehearse the final demonstration. Owner: Edward Wei.
 
 The smarter-bot goal is implemented as the revised Normal/Master heuristics; the original globally optimal wording is not claimed. External model integration and HouseRules gameplay are outside this final build.
 
