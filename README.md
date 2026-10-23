@@ -80,8 +80,8 @@ Complete Work performed with each member's actual contribution before submission
 | `test/UNO/PlayerClassTest.java` | Edward Wei, Greek Yuan | |
 | `test/UNO/BotClassTest.java` | Sudeep Rawal, Greek Yuan | |
 | `test/UNO/UnoGameTest.java` | Sudeep Rawal, Edward Wei | |
-| `src/UNO/HouseRules.java` |  | |
-| `test/UNO/HouseRulesTest.java` |  | |
+| `src/UNO/HouseRules.java` | Sudeep Rawal | |
+| `test/UNO/HouseRulesTest.java` | Sudeep Rawal | |
 
 ## GenAI Use
 
